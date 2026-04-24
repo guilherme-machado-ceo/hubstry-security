@@ -1,12 +1,12 @@
 # Security Policy
 
-## [PT-BR] Pol\u00edtica de Seguran\u00e7a | [EN] Security Policy
+## [PT-BR] Política de Segurança | [EN] Security Policy
 
 ---
 
-## Versions Supported / Vers\u00f5es Suportadas
+## Versions Supported / Versões Suportadas
 
-| Vers\u00e3o | Status |
+| Versão | Status |
 |--------|--------|
 | main   | Suportada / Supported |
 | develop| Suportada / Supported |
@@ -17,13 +17,13 @@
 
 ### PT-BR
 
-A Hubstry leva a seguran\u00e7a a s\u00e9rio. Se voc\u00ea identificar uma vulnerabilidade, reporte de forma respons\u00e1vel:
+A Hubstry leva a segurança a sério. Se você identificar uma vulnerabilidade, reporte de forma responsável:
 
-1. **N\u00e3o** abra uma issue p\u00fablica
+1. **Não** abra uma issue pública
 2. Envie um email para **guilhermemachado.ceo@hubstry.dev** com assunto `[SECURITY] Vulnerabilidade`
-3. Inclua: descri\u00e7\u00e3o, impacto potencial, passos para reproduzir e sugest\u00e3o de mitiga\u00e7\u00e3o
-4. Voc\u00ea receber\u00e1 confirma\u00e7\u00e3o em at\u00e9 48h (\u00fateis)
-5. O timeline de corre\u00e7\u00e3o ser\u00e1 comunicado em at\u00e9 72h
+3. Inclua: descrição, impacto potencial, passos para reproduzir e sugestão de mitigação
+4. Você receberá confirmação em até 48h (úteis)
+5. O timeline de correção será comunicado em até 72h
 
 ### EN
 
@@ -37,17 +37,17 @@ Hubstry takes security seriously. If you identify a vulnerability, report it res
 
 ---
 
-## [PT-BR] Rota P\u00f3s-Qu\u00e2ntica | [EN] Post-Quantum Roadmap
+## [PT-BR] Rota Pós-Quântica | [EN] Post-Quantum Roadmap
 
-| Padr\u00e3o / Standard | Status |
+| Padrão / Standard | Status |
 |-------------------|--------|
-| NIST FIPS 203 (ML-KEM / Kyber) | Integra\u00e7\u00e3o em progresso |
+| NIST FIPS 203 (ML-KEM / Kyber) | Integração em progresso |
 | NIST FIPS 204 (ML-DSA / Dilithium) | Planejado para Q3 2026 |
 | NIST FIPS 205 (SLH-DSA / SPHINCS+) | Planejado para Q4 2026 |
 | TLS 1.3 + PQC Hybrid | Pesquisa |
 
-Consulte [`post-quantum/`](post-quantum/) para detalhes da integra\u00e7\u00e3o HALE + PQC.
+Consulte [`post-quantum/`](post-quantum/) para detalhes da integração HALE + PQC.
 
 ---
 
-*Hubstry Deep Tech \u2014 Security Policy*
+*Hubstry Deep Tech — Security Policy*

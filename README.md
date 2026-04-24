@@ -4,7 +4,7 @@
 
 **Cybersecurity platform with post-quantum cryptography and harmonic authentication**
 
-*Plataforma de ciberseguran\u00e7a com criptografia p\u00f3s-qu\u00e2ntica e autentica\u00e7\u00e3o harm\u00f4nica*
+*Plataforma de cibersegurança com criptografia pós-quântica e autenticação harmônica*
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-lightgrey.svg)](LICENSE)
 [![PQC Ready](https://img.shields.io/badge/PQC-NIST_FIPS_203%2F204%2F205-brightgreen)](post-quantum/README.md)
@@ -19,32 +19,32 @@
 
 ### Sobre
 
-A **Hubstry Security Platform** \u00e9 uma framework de ciberseguran\u00e7a de prop\u00f3sito geral que integra quatro pilares fundamentais: **Criptografia P\u00f3s-Qu\u00e2ntica** (NIST FIPS 203/204/205), **Autentica\u00e7\u00e3o Harm\u00f4nica** (HSL \u2014 Harmonic Security Layer), **An\u00e1lise de Vetores de Ataque** (ENISA 2025 + OWASP 2025) e **Conformidade Regulat\u00f3ria** (NIS2, LGPD, NIST CSF 2.0, ISO 27001).
+A **Hubstry Security Platform** é uma framework de cibersegurança de propósito geral que integra quatro pilares fundamentais: **Criptografia Pós-Quântica** (NIST FIPS 203/204/205), **Autenticação Harmônica** (HSL — Harmonic Security Layer), **Análise de Vetores de Ataque** (ENISA 2025 + OWASP 2025) e **Conformidade Regulatória** (NIS2, LGPD, NIST CSF 2.0, ISO 27001).
 
-Desenvolvida pela **Hubstry Deep Tech** (fundada em 2023), a plataforma utiliza o framework matem\u00e1tico **HALE** (Harmonic Addressing & Labeling Equation) para derivar hierarquias de chaves baseadas em subdivis\u00f5es harm\u00f4nicas racionais de uma frequ\u00eancia fundamental f0, oferecendo separabilidade espectral natural para segmenta\u00e7\u00e3o de redes e autentica\u00e7\u00e3o leve.
+Desenvolvida pela **Hubstry Deep Tech** (fundada em 2023), a plataforma utiliza o framework matemático **HALE** (Harmonic Addressing & Labeling Equation) para derivar hierarquias de chaves baseadas em subdivisões harmônicas racionais de uma frequência fundamental f0, oferecendo separabilidade espectral natural para segmentação de redes e autenticação leve.
 
-O m\u00f3dulo **HSL** realiza handshakes de autentica\u00e7\u00e3o em aproximadamente **200 bytes**, contra os ~8 KB do TLS 1.3, mantendo resist\u00eancia computacional equivalente \u2014 tornando-o ideal para IoT, telecomunica\u00e7\u00f5es e ambientes com recursos limitados.
+O módulo **HSL** realiza handshakes de autenticação em aproximadamente **200 bytes**, contra os ~8 KB do TLS 1.3, mantendo resistência computacional equivalente — tornando-o ideal para IoT, telecomunicações e ambientes com recursos limitados.
 
 ### About
 
-The **Hubstry Security Platform** is a general-purpose cybersecurity framework integrating four core pillars: **Post-Quantum Cryptography** (NIST FIPS 203/204/205), **Harmonic Authentication** (HSL \u2014 Harmonic Security Layer), **Attack Vector Analysis** (ENISA 2025 + OWASP 2025), and **Regulatory Compliance** (NIS2, LGPD, NIST CSF 2.0, ISO 27001).
+The **Hubstry Security Platform** is a general-purpose cybersecurity framework integrating four core pillars: **Post-Quantum Cryptography** (NIST FIPS 203/204/205), **Harmonic Authentication** (HSL — Harmonic Security Layer), **Attack Vector Analysis** (ENISA 2025 + OWASP 2025), and **Regulatory Compliance** (NIS2, LGPD, NIST CSF 2.0, ISO 27001).
 
 Developed by **Hubstry Deep Tech** (founded in 2023), the platform leverages the **HALE** (Harmonic Addressing & Labeling Equation) mathematical framework to derive key hierarchies based on rational harmonic subdivisions of a fundamental frequency f0, providing natural spectral separability for network segmentation and lightweight authentication.
 
-The **HSL** module performs authentication handshakes in approximately **200 bytes**, compared to TLS 1.3''s ~8 KB, maintaining equivalent computational resistance \u2014 making it ideal for IoT, telecommunications, and resource-constrained environments.
+The **HSL** module performs authentication handshakes in approximately **200 bytes**, compared to TLS 1.3''s ~8 KB, maintaining equivalent computational resistance — making it ideal for IoT, telecommunications, and resource-constrained environments.
 
 ---
 
 ## [PT-BR] Ecossistema Hubstry | [EN] Hubstry Ecosystem
 
-Este reposit\u00f3rio faz parte do ecossistema Hubstry:
+Este repositório faz parte do ecossistema Hubstry:
 
-| Reposit\u00f3rio | Descri\u00e7\u00e3o | Link |
+| Repositório | Descrição | Link |
 |----------------|-------------|------|
-| **hubstry-hale-ecosystem** | Framework matem\u00e1tico HALE | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-hale-ecosystem) |
+| **hubstry-hale-ecosystem** | Framework matemático HALE | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-hale-ecosystem) |
 | **iot-protocol-hubstry** | Protocolo IoT / HPG | [GitHub](https://github.com/guilherme-machado-ceo/iot-protocol-hubstry) |
 | **qualia-hub-ecosystem** | Plataforma Qualia Hub | [GitHub](https://github.com/guilherme-machado-ceo/qualia-hub-ecosystem) |
-| **hubstry-security** | Plataforma de ciberseguran\u00e7a (este repo) | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-security) |
+| **hubstry-security** | Plataforma de cibersegurança (este repo) | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-security) |
 
 This repository is part of the Hubstry ecosystem:
 
@@ -81,25 +81,25 @@ This repository is part of the Hubstry ecosystem:
 
 </div>
 
-**M\u00f3dulos / Modules:**
+**Módulos / Modules:**
 
-| M\u00f3dulo | Descri\u00e7\u00e3o / Description |
+| Módulo | Descrição / Description |
 |--------|------------------------|
-| [`post-quantum/`](post-quantum/) | Implementa\u00e7\u00e3o dos padr\u00f5es NIST PQC (ML-KEM, ML-DSA, SLH-DSA) com integra\u00e7\u00e3o HALE |
-| [`hsl/`](hsl/) | Harmonic Security Layer \u2014 autentica\u00e7\u00e3o baseada em coer\u00eancia harm\u00f4nica |
-| [`attack-vectors/`](attack-vectors/) | Cat\u00e1logo de 14+ vetores de ataque mapeados contra ENISA 2025 e OWASP 2025 |
-| [`compliance/`](compliance/) | Mapeamento regulat\u00f3rio multi-framework com playbook de resposta a incidentes |
-| [`docs/`](docs/) | Arquitetura detalhada, modelo de amea\u00e7as e especifica\u00e7\u00f5es t\u00e9cnicas |
-| [`roadmap/`](roadmap/) | Planejamento de desenvolvimento 2026-2027 e progress\u00e3o TRL |
+| [`post-quantum/`](post-quantum/) | Implementação dos padrões NIST PQC (ML-KEM, ML-DSA, SLH-DSA) com integração HALE |
+| [`hsl/`](hsl/) | Harmonic Security Layer — autenticação baseada em coerência harmônica |
+| [`attack-vectors/`](attack-vectors/) | Catálogo de 14+ vetores de ataque mapeados contra ENISA 2025 e OWASP 2025 |
+| [`compliance/`](compliance/) | Mapeamento regulatório multi-framework com playbook de resposta a incidentes |
+| [`docs/`](docs/) | Arquitetura detalhada, modelo de ameaças e especificações técnicas |
+| [`roadmap/`](roadmap/) | Planejamento de desenvolvimento 2026-2027 e progressão TRL |
 
 ---
 
-## [PT-BR] In\u00edcio R\u00e1pido | [EN] Quick Start
+## [PT-BR] Início Rápido | [EN] Quick Start
 
-### Pr\u00e9-requisitos
+### Pré-requisitos
 
 - Git 2.40+
-- Python 3.10+ (para exemplos de refer\u00eancia)
+- Python 3.10+ (para exemplos de referência)
 - liboqs 0.10+ (para exemplos PQC)
 
 ### Clonar / Clone
@@ -109,7 +109,7 @@ git clone https://github.com/guilherme-machado-ceo/hubstry-security.git
 cd hubstry-security
 ```
 
-### Exemplo PQC \u2014 ML-KEM-768 com HALE
+### Exemplo PQC — ML-KEM-768 com HALE
 
 ```python
 from hashlib import sha256
@@ -123,47 +123,47 @@ def hale_key_derivation(f0, level, b):
 
 ---
 
-## [PT-BR] Roadmap T\u00e9cnico | [EN] Technical Roadmap
+## [PT-BR] Roadmap Técnico | [EN] Technical Roadmap
 
-| Fase | Per\u00edodo | TRL | Entreg\u00e1veis |
+| Fase | Período | TRL | Entregáveis |
 |------|------------|-----|-------------|
-| **Fase 1** | Q2 2026 | 3-4 | Valida\u00e7\u00e3o laboratorial do HSL; benchmarks contra TLS 1.3 |
-| **Fase 2** | Q3 2026 | 4-5 | Integra\u00e7\u00e3o ML-KEM-768 + HSL; PoC em ambiente controlado |
+| **Fase 1** | Q2 2026 | 3-4 | Validação laboratorial do HSL; benchmarks contra TLS 1.3 |
+| **Fase 2** | Q3 2026 | 4-5 | Integração ML-KEM-768 + HSL; PoC em ambiente controlado |
 | **Fase 3** | Q1 2027 | 5-6 | Testes com parceiro telecom; conformidade NIS2 validada |
 
 Veja o roadmap completo em [`roadmap/2026-2027.md`](roadmap/2026-2027.md).
 
 ---
 
-## [PT-BR] Conformidade Regulat\u00f3ria | [EN] Regulatory Compliance
+## [PT-BR] Conformidade Regulatória | [EN] Regulatory Compliance
 
-- **ENISA NIS2** \u2014 Medidas de seguran\u00e7a de rede e informa\u00e7\u00e3o (UE 2022/2555)
-- **LGPD** \u2014 Lei Geral de Prote\u00e7\u00e3o de Dados (Brasil, Lei 13.709/2018)
-- **NIST CSF 2.0** \u2014 Cybersecurity Framework v2.0 (2024)
-- **ISO 27001:2022** \u2014 Information Security Management System
-- **OWASP ASVS 4.0** \u2014 Application Security Verification Standard
+- **ENISA NIS2** — Medidas de segurança de rede e informação (UE 2022/2555)
+- **LGPD** — Lei Geral de Proteção de Dados (Brasil, Lei 13.709/2018)
+- **NIST CSF 2.0** — Cybersecurity Framework v2.0 (2024)
+- **ISO 27001:2022** — Information Security Management System
+- **OWASP ASVS 4.0** — Application Security Verification Standard
 
 Detalhes em [`compliance/`](compliance/).
 
 ---
 
-## [PT-BR] Seguran\u00e7a | [EN] Security
+## [PT-BR] Segurança | [EN] Security
 
 Reporte vulnerabilidades em [`SECURITY.md`](SECURITY.md).
 
 ---
 
-## [PT-BR] Contribui\u00e7\u00e3o | [EN] Contributing
+## [PT-BR] Contribuição | [EN] Contributing
 
-Contribui\u00e7\u00f5es s\u00e3o bem-vindas! Consulte [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Contribuições são bem-vindas! Consulte [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ---
 
-## [PT-BR] Licen\u00e7a | [EN] License
+## [PT-BR] Licença | [EN] License
 
-Este projeto est\u00e1 licenciado sob **CC BY-NC-SA 4.0** \u2014 uso n\u00e3o comercial. Veja [`LICENSE`](LICENSE).
+Este projeto está licenciado sob **CC BY-NC-SA 4.0** — uso não comercial. Veja [`LICENSE`](LICENSE).
 
-This project is licensed under **CC BY-NC-SA 4.0** \u2014 non-commercial use. See [`LICENSE`](LICENSE).
+This project is licensed under **CC BY-NC-SA 4.0** — non-commercial use. See [`LICENSE`](LICENSE).
 
 ---
 
