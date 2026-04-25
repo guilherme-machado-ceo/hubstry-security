@@ -14,6 +14,19 @@
 </div>
 
 ---
+## Incrementos / Latest Implementations
+
+| Módulo | Arquivo | Descrição |
+|--------|---------|-----------|
+| **HSL Auth** | hsl_layer/hsl_auth.py | Autenticação H-Challenge/Response 3 etapas (~200B) |
+| **Detecção de Intrusão** | hsl_layer/intrusion_detection.py | Desvio de fase Δφ > ε |
+| **Rotação LFSR** | hsl_layer/key_rotation.py | Rotação de chaves via LFSR |
+| **π-Radical Operator** | pi_radical/pi_radical.py | Operador π-radical — 6 relações ρ₁-ρ₆ |
+| **Lattice 64 Perfis** | pi_radical/lattice_profiles.py | Lattice de 64 perfis harmônicos |
+| **W Matrix Fixed-Point** | pi_radical/w_matrix.py | Matriz W — ponto fixo espectral |
+| **Bound ρ₃ Quântico** | pi_radical/quantum_bound.py | Limite quântico ρ₃ |
+| **HSL Demo** | demo/hsl_demo.py | Demonstração interativa HSL |
+
 
 ## [PT-BR] Sobre | [EN] About
 
