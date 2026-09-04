@@ -72,27 +72,20 @@ This repository is part of the Hubstry ecosystem:
 
 ## [PT-BR] Arquitetura | [EN] Architecture
 
-<div align="center">
+```mermaid
+flowchart TD
+    H[Hubstry Security Platform]
 
-```
-                        +-------------------------+
-                        |   Hubstry Security      |
-                        |   Platform              |
-                        +-------------------------+
-                                  |
-            +---------------------+---------------------+
-            |              |              |             |
-    +-------v-------+ +----v----+ +------v-----+ +----v------+
-    | Post-Quantum  | |   HSL   | |  Attack    | | Compliance|
-    | Cryptography  | | Harmonic| |  Vectors   | |  Mapping  |
-    | NIST FIPS     | | Auth    | |  ENISA/    | |  NIS2     |
-    | 203/204/205   | | ~200B   | |  OWASP     | |  LGPD     |
-    +---------------+ +---------+ |  Analysis  | |  NIST CSF |
-                                    +------------+ |  ISO27001|
-                                                   +----------+
-```
+    H --> PQC[Post-Quantum Cryptography]
+    H --> HSL[HSL - Harmonic Auth]
+    H --> AV[Attack Vectors]
+    H --> CM[Compliance Mapping]
 
-</div>
+    PQC --> PQC1[NIST FIPS 203/204/205]
+    HSL --> HSL1["Autenticação harmônica ~200B"]
+    AV --> AV1["Análise ENISA / OWASP"]
+    CM --> CM1["NIS2 · LGPD · NIST CSF · ISO 27001"]
+```
 
 **Módulos / Modules:**
 
