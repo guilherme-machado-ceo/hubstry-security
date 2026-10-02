@@ -27,6 +27,29 @@
 | **Bound ρ₃ Quântico** | pi_radical/quantum_bound.py | Limite quântico ρ₃ |
 | **HSL Demo** | demo/hsl_demo.py | Demonstração interativa HSL |
 
+---
+
+## Current Research Status
+
+**PR1 — Quantum Encoding & 64-Profile Lattice** · Status: **merged** (PR #2, 2026-10-03)
+
+Validated (OBSERVED/DERIVED, 3 ambientes independentes):
+
+- Comparação de encodings de fase harmônica (atual vs equatorial), n = 4…256;
+- Encoding equatorial = phase encoding padrão da literatura; fidelidade
+  `F = cos²(Δθ/2)`, uniforme em k (provado simbolicamente e numericamente);
+- 64 perfis como encoding computacional em base de 6 qubits + projetor P_C;
+- 136 casos pytest; 520 combinações (k,n) verificadas contra o baseline.
+
+**Não reivindicado:** segurança quântica, vantagem quântica, nível
+criptográfico. `post-quantum/rho3_bound.py`: auditado (Fases 1–2,
+2026-10-03) — experimentalmente inválido e cientificamente bloqueado até
+definição formal de f_ρ₃; não citar resultados do módulo. O bloqueio é da
+implementação e da quantidade f_ρ₃; o conceito ρ₃ permanece objeto de
+pesquisa. Registro experimental completo:
+[`docs/research/pr1-quantum-encoding.md`](docs/research/pr1-quantum-encoding.md).
+
+---
 
 ## [PT-BR] Sobre | [EN] About
 
@@ -44,7 +67,7 @@ The **Hubstry Security Platform** is a general-purpose cybersecurity framework i
 
 Developed by **Hubstry Deep Tech** (founded in 2023), the platform leverages the **HALE** (Harmonic Addressing & Labeling Equation) mathematical framework to derive key hierarchies based on rational harmonic subdivisions of a fundamental frequency f0, providing natural spectral separability for network segmentation and lightweight authentication.
 
-The **HSL** module performs authentication handshakes in approximately **200 bytes**, compared to TLS 1.3''s ~8 KB, maintaining equivalent computational resistance — making it ideal for IoT, telecommunications, and resource-constrained environments.
+The **HSL** module performs authentication handshakes in approximately **200 bytes**, compared to TLS 1.3's ~8 KB, maintaining equivalent computational resistance — making it ideal for IoT, telecommunications, and resource-constrained environments.
 
 ---
 
@@ -93,6 +116,7 @@ flowchart TD
 |--------|------------------------|
 | [`post-quantum/`](post-quantum/) | Implementação dos padrões NIST PQC (ML-KEM, ML-DSA, SLH-DSA) com integração HALE |
 | [`hsl/`](hsl/) | Harmonic Security Layer — autenticação baseada em coerência harmônica |
+| [`quantum/`](quantum/) | Trilha de pesquisa quântica (encodings de fase, lattice de 64 perfis) |
 | [`attack-vectors/`](attack-vectors/) | Catálogo de 14+ vetores de ataque mapeados contra ENISA 2025 e OWASP 2025 |
 | [`compliance/`](compliance/) | Mapeamento regulatório multi-framework com playbook de resposta a incidentes |
 | [`docs/`](docs/) | Arquitetura detalhada, modelo de ameaças e especificações técnicas |
