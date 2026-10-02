@@ -9,7 +9,7 @@
 
 Four new files, +577/−0, no existing file modified. NumPy-only. No liboqs,
 no CUDA-Q, no QPU, no cloud execution. `post-quantum/rho3_bound.py`
-deliberately untouched (separate audit pending).
+deliberately untouched (handled by a separate audit, since concluded — see §6).
 
 | File | Purpose |
 |------|---------|
@@ -86,17 +86,20 @@ deliberately untouched (separate audit pending).
 classical baseline (circular distance, RBF kernel over phase). If merit
 exists, expect it in metric/engineering terms, not quantum advantage.
 
-## 6. Not tested here [NOT TESTED]
+## 6. rho3_bound.py status (updated 2026-10-03)
 
-- Any security or anomaly-detection utility (E-C).
-- CUDA-Q/GPU execution, QPU execution.
-- `rho3_bound.py` correctness (separate audit).
+`post-quantum/rho3_bound.py`: audited (Phases 1–2, 2026-10-03) —
+experimentally invalid and scientifically blocked until a formal definition
+of f_ρ₃ exists; do not cite the module's results. The block applies to the
+current mathematical implementation and to the quantity f_ρ₃; the ρ₃ concept
+itself remains a research object (Paper 1 / Paper 2 formalization pending).
+Audit reports retained outside the repository.
 
 ## 7. Next gates
 
-1. `research/audit-rho3-bound` — mathematical audit (counterexample known:
-   implemented inequality fails for F < (3−√5)/2 ≈ 0.382).
-2. PR2 — real PQC via liboqs, only after approval.
+1. Paper 2 §3.2 errata/clarification (textual artifact, outside the repo) →
+   formal specification of f_ρ₃ → only then any rho3 code.
+2. PR2 — real PQC via liboqs, only after specification review and approval.
 
 ---
 

@@ -42,8 +42,12 @@ Validated (OBSERVED/DERIVED, 3 ambientes independentes):
 - 136 casos pytest; 520 combinações (k,n) verificadas contra o baseline.
 
 **Não reivindicado:** segurança quântica, vantagem quântica, nível
-criptográfico. `post-quantum/rho3_bound.py` permanece experimental e não
-auditado. Registro experimental completo: [`docs/research/pr1-quantum-encoding.md`](docs/research/pr1-quantum-encoding.md).
+criptográfico. `post-quantum/rho3_bound.py`: auditado (Fases 1–2,
+2026-10-03) — experimentalmente inválido e cientificamente bloqueado até
+definição formal de f_ρ₃; não citar resultados do módulo. O bloqueio é da
+implementação e da quantidade f_ρ₃; o conceito ρ₃ permanece objeto de
+pesquisa. Registro experimental completo:
+[`docs/research/pr1-quantum-encoding.md`](docs/research/pr1-quantum-encoding.md).
 
 ---
 
@@ -63,7 +67,7 @@ The **Hubstry Security Platform** is a general-purpose cybersecurity framework i
 
 Developed by **Hubstry Deep Tech** (founded in 2023), the platform leverages the **HALE** (Harmonic Addressing & Labeling Equation) mathematical framework to derive key hierarchies based on rational harmonic subdivisions of a fundamental frequency f0, providing natural spectral separability for network segmentation and lightweight authentication.
 
-The **HSL** module performs authentication handshakes in approximately **200 bytes**, compared to TLS 1.3''s ~8 KB, maintaining equivalent computational resistance — making it ideal for IoT, telecommunications, and resource-constrained environments.
+The **HSL** module performs authentication handshakes in approximately **200 bytes**, compared to TLS 1.3's ~8 KB, maintaining equivalent computational resistance — making it ideal for IoT, telecommunications, and resource-constrained environments.
 
 ---
 
@@ -82,7 +86,7 @@ This repository is part of the Hubstry ecosystem:
 
 | Repository | Description | Link |
 |-----------|-------------|------|
-| **hubstry-hale-ecosystem** | HALE mathematical framework | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-hale-ecosystem) |
+| **hubstry-hale-ecosystem** | Framework matemático HALE | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-hale-ecosystem) |
 | **iot-protocol-hubstry** | IoT Protocol / HPG | [GitHub](https://github.com/guilherme-machado-ceo/iot-protocol-hubstry) |
 | **qualia-hub-ecosystem** | Qualia Hub Platform | [GitHub](https://github.com/guilherme-machado-ceo/qualia-hub-ecosystem) |
 | **hubstry-security** | Cybersecurity platform (this repo) | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-security) |
@@ -164,7 +168,7 @@ Veja o roadmap completo em [`roadmap/2026-2027.md`](roadmap/2026-2027.md).
 ## [PT-BR] Conformidade Regulatória | [EN] Regulatory Compliance
 
 - **ENISA NIS2** — Medidas de segurança de rede e informação (UE 2022/2555)
-- **LGPD** — Lei Geral de Proteção de Dados (Brasil, Lei 13.709/2018)
+- **LGPD** — Lei de Proteção de Dados (Brasil, Lei 13.709/2018)
 - **NIST CSF 2.0** — Cybersecurity Framework v2.0 (2024)
 - **ISO 27001:2022** — Information Security Management System
 - **OWASP ASVS 4.0** — Application Security Verification Standard
