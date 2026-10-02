@@ -1,0 +1,4 @@
+# Optional research track; the core repository remains dependency-light.
+numpy>=1.26
+# CUDA-Q is installed only in a CUDA-Q capable environment.
+# Install explicitly with: pip install cudaq
