@@ -12,6 +12,27 @@ This module implements the integration of **NIST Post-Quantum Cryptography** sta
 
 ---
 
+## PR2 — Real PQC Provider (specification v1.2) · Status: implemented, under review
+
+**[IMPLEMENTED — under Luna/PI review]** New files:
+
+| File | Purpose |
+|------|---------|
+| `pqc_provider.py` | Crypto-agile `PQCProvider` facade (gate G1): registry, validation, key lifecycle, HKDF-SHA-256 key schedule with normative length-prefixed `info` encoding, canonical transcript (G3) |
+| `oqs_adapter.py` | Thin liboqs adapter — implementation detail, backend-name mapping isolated here (identifier ≠ backend version ≠ library version) |
+| `bench_pqc.py` | CPU benchmark with full environment/provenance metadata (G7) |
+| `../tests/pqc/test_provider.py` | Test suite T0–T10 |
+
+**Algorithms (spec v1.2):** ML-KEM-768 (FIPS 203) [STANDARDIZED], ML-DSA-65 (FIPS 204) [STANDARDIZED], SLH-DSA-SHA2-128s (FIPS 205) [STANDARDIZED]. FN-DSA: watchlist, **blocked**. HQC: NIST-selected (not yet standardized), watchlist.
+
+**Sandbox validation (OBSERVED, 2026-10-03, liboqs 0.16.0):** 18/18 tests T0–T10 passing, incl. RFC 5869 HKDF vectors and info-encoding injectivity. CPU baseline (sandbox VM): ML-KEM-768 ops ≈ 0.05 ms median; ML-DSA-65 sign ≈ 0.21 ms; SLH-DSA-SHA2-128s sign ≈ 1.8 s (documented as slow; agility alternative, not default). No security-level inference from timings.
+
+**Architectural boundary (G4 — normative):** HALE/HSL context is transcript metadata and/or protocol-level domain-separation input; it is **not** an input to the ML-KEM primitive and is **not** cryptographic entropy. In the PR2 provider, ML-KEM key generation uses the OS/liboqs RNG; the older "HALE Key Hierarchy → PQC Seed" diagram below describes a legacy placeholder design and is **superseded** by the v1.2 key schedule (HKDF-SHA-256 over the KEM shared secret, salt = transcript hash). The "Hybrid Handshake" KDF line below is likewise superseded by the v1.2 HKDF composition.
+
+**Scope note:** this PR demonstrates standardized NIST algorithms through a documented liboqs backend, within the scope and limitations of this implementation; it does not imply whole-platform cryptographic validation.
+
+---
+
 ## Padrões NIST Implementados / NIST Standards Implemented
 
 ### FIPS 203 — ML-KEM (Module-Lattice-Based Key-Encapsulation Mechanism)
@@ -62,7 +83,7 @@ Level 4: phi(b)^4 x f0  -->  PQC Seed (input for ML-KEM key generation)
 
 Onde **phi(b)** é a função totiente de Euler, garantindo que cada nível de hierarquia produz subchaves criptograficamente independentes.
 
-Where **phi(b)** is Euler''s totient function, ensuring each hierarchy level produces cryptographically independent subkeys.
+Where **phi(b)** is Euler's totient function, ensuring each hierarchy level produces cryptographically independent subkeys.
 
 ---
 
