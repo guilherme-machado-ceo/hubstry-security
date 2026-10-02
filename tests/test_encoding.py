@@ -26,9 +26,28 @@ from quantum.encoding_compare import (
     phase_sensitivity,
     state_fidelity,
 )
+from quantum.harmonic_state import harmonic_qubit  # repo baseline (main @ 90a76aa)
 
 TOL = 1e-12
 ALL_N = SUBDIVISIONS  # (4, 8, 12, 16, 32, 64, 128, 256)
+
+
+# --- Required Change #1 (PR1 review gate, autorizado 03/10/2026) -------------
+# Justificativa registrada: o PR1 introduziu uma segunda implementacao do
+# encoding atual (encoding_compare.current_encoding). Este teste protege
+# contra drift entre ela e o baseline estabelecido (harmonic_state.harmonic_qubit).
+
+@pytest.mark.parametrize("n", ALL_N)
+def test_current_encoding_matches_repo_baseline(n):
+    """current_encoding(2*pi*k/n) must reproduce harmonic_qubit(k, n) exactly."""
+    for k in range(n):
+        theta = 2.0 * math.pi * k / n
+        baseline = np.asarray(harmonic_qubit(k, n).amplitudes, dtype=np.complex128)
+        reimplementation = current_encoding(theta)
+        assert np.allclose(baseline, reimplementation, atol=TOL, rtol=0.0), (
+            f"drift baseline vs reimplementation at n={n}, k={k}: "
+            f"{baseline} != {reimplementation}"
+        )
 
 
 # --- Normalization -----------------------------------------------------------
