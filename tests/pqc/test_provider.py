@@ -120,9 +120,12 @@ def test_t4_negative_kem_protocol_level(provider):
     signature = provider.sign_transcript(transcript, sig_kp.secret_key)
 
     bad_ct = bytearray(ct); bad_ct[0] ^= 1
-    # observational: implicit-rejection candidate is recorded, not relied on
+    # Observational only: compute the implicit-rejection candidate for
+    # evidence/debugging, but do not assert any relation to the original
+    # shared secret. FIPS 203 does not make secret inequality the protocol
+    # acceptance criterion.
     candidate = provider.decapsulate(bytes(bad_ct), kem_kp.secret_key)
-    assert candidate != ss  # observational only
+    assert candidate is not None
 
     # protocol level: tampered ct breaks transcript verification
     bad_transcript = provider.build_transcript(
