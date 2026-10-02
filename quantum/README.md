@@ -109,9 +109,11 @@ n = 4, 8, 12, 16, 32, 64, 128, 256.
 
 - No quantum security, no quantum advantage, no cryptographic security level.
 - Fidelity and anomaly scores are experimental similarity measurements.
-- `post-quantum/rho3_bound.py` remains experimental and **not audited**;
-  a mathematical inconsistency in its claimed bound is under separate review
-  (`research/audit-rho3-bound`). Do not cite its results until the audit
-  concludes.
+- `post-quantum/rho3_bound.py`: audited (Phases 1-2, 2026-10-03) -
+  experimentally invalid and scientifically blocked until a formal
+  definition of f_rho3 exists; do not cite the module's results. The block
+  applies to the current mathematical implementation and to the quantity
+  f_rho3; the rho3 concept itself remains a research object (Paper 1/Paper 2
+  formalization pending; audit reports retained outside the repo).
 
 Full experimental record: `docs/research/pr1-quantum-encoding.md`.
