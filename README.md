@@ -180,9 +180,9 @@ def hale_key_derivation(f0, level, b):
 |------|------------|-----|-------------|
 | **Fase 1** | A definir (original: Q2 2026) | 3-4 | Validação laboratorial do HSL; benchmarks contra TLS 1.3 |
 | **Fase 2** | A definir (original: Q3 2026) | 4-5 | Integração ML-KEM-768 + HSL; PoC em ambiente controlado |
-| **Fase 3** | Q1 2027 | 5-6 | Testes com parceiro de validação; conformidade NIS2 validada |
+| **Fase 3** | A definir (original: Q1 2027) | 5-6 | Testes com parceiro de validação; conformidade NIS2 validada |
 
-> As fases 1 e 2 não foram concluídas nos prazos originais e serão replanejadas. As datas originais aparecem apenas como registro histórico; novas datas ainda não foram definidas.
+> As fases 1 e 2 não foram concluídas nos prazos originais e serão replanejadas; a fase 3 depende delas. As datas originais aparecem apenas como registro histórico; novas datas ainda não foram definidas.
 
 Veja o roadmap completo em [`roadmap/2026-2027.md`](roadmap/2026-2027.md).
 

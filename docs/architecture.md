@@ -67,7 +67,7 @@ The Hubstry Security Platform is organized as a modular framework where each com
 | Current | **3** | Proof of concept — mathematical validation + reference implementation |
 | TBD (original: Q2 2026) | 4 | Laboratory validation — benchmarks vs TLS 1.3, controlled testing |
 | TBD (original: Q3 2026) | 5 | Controlled environment — PoC with validation partner |
-| Q1 2027 | 6 | Pilot demonstration — field testing in production-like environment |
+| TBD (original: Q1 2027) | 6 | Pilot demonstration — field testing in production-like environment |
 
 ---
 

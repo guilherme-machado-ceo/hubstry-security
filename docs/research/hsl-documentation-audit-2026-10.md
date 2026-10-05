@@ -190,6 +190,6 @@ Fora do Commit 2: `post-quantum/README.md` (PR #5), qualquer arquivo `.py`, e os
 **Decidido pelo PI (2026-10-05) e aplicado no Commit 2:**
 - remoção dos nomes de empresas em C33; C33 reescrito como "Potenciais parceiros e ambientes de aplicação, a definir após validação técnica e comercial"; C36 como "prospecção de múltiplos parceiros prevista como etapa futura";
 - generalização de todos os marcos que pressupunham telecom para "parceiro de validação" e "piloto". IoT e telecomunicações permanecem apenas como aplicações-alvo em investigação. O roadmap descreve necessidades de validação e experimentação, não um mercado escolhido;
-- fases vencidas sem novas datas: as datas originais aparecem apenas como registro, no formato "A definir (original: …)", para não sugerir prazo vigente.
+- fases sem novas datas: as datas originais aparecem apenas como registro, no formato "A definir (original: …)", para não sugerir prazo vigente. Regra de dependência: quando uma etapa depende de outra cujo novo prazo ainda não foi definido, seu prazo também passa a "A definir". Por isso a fase 3 e seus entregáveis, embora não vencidos, seguem o mesmo formato.
 
 **Pendente:** novas datas do roadmap, a definir pelo PI quando houver decisão sobre os próximos marcos técnicos e comerciais; rodada própria para C25 e C38.
