@@ -201,7 +201,7 @@ Fora do Commit 2: `post-quantum/README.md` (PR #5), qualquer arquivo `.py`, e os
 | Data | Achados | Situação |
 |---|---|---|
 | 2026-10-05 | F-02, F-03, F-04, F-05, F-06, F-07, F-08, F-09 | Corrigidos na implementação experimental `hsl/hsl_auth_v1.py` (HSL Auth v1, PSK-HMAC), com testes; sem revisão criptográfica externa. A v0 (`hsl/hsl_module.py`) não foi alterada e os achados continuam reproduzíveis nela por `tests/test_hsl_v0_regression.py`. Ver [`hsl-v1-execution-report-2026-10.md`](hsl-v1-execution-report-2026-10.md). |
-| 2026-10-05 | F-01 | Aberto. Depende do provedor PQC do PR #5. |
+| 2026-10-05 | F-01 | Aberto, em duas partes: (a) provedor ML-DSA-65 implementado e reproduzido no PR #5, efetivo na `main` somente após o merge daquele PR; (b) integração de ML-DSA ao handshake HSL v1 pendente, em ciclo próprio. F-01 não deve ser marcado como resolvido enquanto (b) estiver pendente. |
 | 2026-10-05 | F-10 | Aberto. |
 | 2026-10-05 | C34 (`post-quantum/README.md`) | Requalificado no PR #5. Ver [`pr5-pqc-reproduction-report-2026-10.md`](pr5-pqc-reproduction-report-2026-10.md). |
 | 2026-10-05 | F-11 (novo) | `post-quantum/rho3_bound.py:355` contém um erro de sintaxe (`positional argument follows keyword argument`); nenhum teste importa o módulo. Identificado por revisão independente e reproduzido. Aberto; encaminhado ao PR de CI (F-10). |

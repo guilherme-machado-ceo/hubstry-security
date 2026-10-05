@@ -23,7 +23,17 @@ This module contains an experimental provider of **NIST Post-Quantum Cryptograph
 | `bench_pqc.py` | CPU benchmark with full environment/provenance metadata (G7) |
 | `../tests/pqc/test_provider.py` | Test suite T0–T10 |
 
-**Active algorithms (PR2 scope — exactly three):** ML-KEM-768 (FIPS 203) [STANDARDIZED], ML-DSA-65 (FIPS 204) [STANDARDIZED], SLH-DSA-SHA2-128s (FIPS 205) [STANDARDIZED]. ML-KEM-512/1024 are valid FIPS 203 parameter sets but are **out of PR2 scope** (re-adding requires explicit test-matrix coverage or a new specification cycle). FN-DSA: watchlist, **blocked**. HQC: NIST-selected (not yet standardized), watchlist.
+**Active algorithms (PR2 scope — exactly three).** "Standardized" is a property of the NIST standard; "implemented", "exercised by tests" and "integrated" are properties of this project.
+
+| Algoritmo / Algorithm | Padrão / Standard | Status no PR #5 / Status in PR #5 | Exercitado por / Exercised by | Não coberto / Not covered |
+|---|---|---|---|---|
+| ML-KEM-768 | FIPS 203 (externo / external) | Implementado e exercitado / implemented and exercised | T0, T1, T4, T5, T7, T10 | — |
+| ML-DSA-65 | FIPS 204 (externo / external) | Implementado e exercitado / implemented and exercised | T0, T2, T3, T4, T5, T7 | — |
+| SLH-DSA-SHA2-128s | FIPS 205 (externo / external) | Implementado e exercitado / implemented and exercised | T0 (disponibilidade / availability), T2 (roundtrip), T7 (roundtrip + assinatura adulterada / tampered signature) | Tamanhos (T5), negativos de mensagem e chave trocada (T3), nível de protocolo (T4) / sizes, wrong-message and wrong-key negatives, protocol level |
+
+Integração / Integration: nenhum dos três está integrado à `main` antes do merge deste PR, nem ao handshake HSL (finding F-01). / None of the three is integrated into `main` before this PR is merged, nor into the HSL handshake.
+
+ML-KEM-512/1024 are valid FIPS 203 parameter sets but are **out of PR2 scope** (re-adding requires explicit test-matrix coverage or a new specification cycle). FN-DSA: watchlist, **blocked**. HQC: NIST-selected (not yet standardized), watchlist.
 
 **Normative architecture (the only current one):**
 

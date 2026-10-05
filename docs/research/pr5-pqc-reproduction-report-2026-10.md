@@ -87,6 +87,22 @@ Os tempos dependem do ambiente (2 núcleos, nuvem) e diferem da execução hist�
 
 ## 6. Distinções preservadas
 
+**Cobertura por algoritmo** (ver tabela em `post-quantum/README.md`): ML-KEM-768 e ML-DSA-65 são exercitados em roundtrip, casos negativos, tamanhos e nível de protocolo. SLH-DSA-SHA2-128s é exercitado em disponibilidade, roundtrip e assinatura adulterada (T0, T2, T7); tamanhos, negativos de mensagem e chave trocada e nível de protocolo não são cobertos para ele.
+
+**F-01:** o provedor ML-DSA-65 (parte a) passa a valer na `main` com o merge deste PR; a integração de ML-DSA ao handshake HSL v1 (parte b) continua pendente.
+
+**Gate final do PR #5:**
+
+| Item | Situação |
+|---|---|
+| 19/19 PQC | Aprovado |
+| 192 testes na árvore integrada | Aprovado |
+| `compileall` | 1 erro conhecido (F-11), fora do escopo; não bloqueia este PR, bloquearia apenas uma declaração de validade do repositório inteiro |
+| README requalificado | Aprovado |
+| Escopo do PR | Aprovado |
+| Revisão Luna | Pendente |
+| Aprovação PI | Pendente |
+
 | Afirmação | Situação |
 |---|---|
 | Provedor PQC reproduzido de forma independente | Sim (19/19, duas vezes) |
