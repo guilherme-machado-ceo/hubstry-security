@@ -6,6 +6,8 @@
 
 ## Conceito / Concept
 
+> **HSL Auth v1 (PSK-HMAC), 2026-10-05.** A versão experimental corrigida está em [`hsl_auth_v1.py`](hsl_auth_v1.py). A autenticação se apoia em chave pré-compartilhada (PSK, mínimo de 32 bytes) e HMAC-SHA-256, com MACs direcionais (`HSL-v1/response`, `HSL-v1/verify`), verificação da etapa 3 pelo respondente, transcript canônico, formato de mensagem versionado e detecção de replay. f0, base e fases harmônicas são contexto do protocolo e identificação, não segredo. Limitações: distribuição da PSK fora do escopo; detecção de replay limitada à vida da instância; sem sigilo futuro; sem assinatura pós-quântica (F-01). Relatório: [`docs/research/hsl-v1-execution-report-2026-10.md`](../docs/research/hsl-v1-execution-report-2026-10.md). O restante deste documento descreve a v0 histórica.
+
 > **Status: hipótese de pesquisa.** Este documento descreve o desenho do HSL e a sua implementação experimental. Nenhuma propriedade de segurança ou desempenho listada aqui foi validada. Auditoria completa: [`docs/research/hsl-documentation-audit-2026-10.md`](../docs/research/hsl-documentation-audit-2026-10.md).
 
 O **HSL** (Harmonic Security Layer) é uma proposta de protocolo de autenticação leve baseado em **coerência harmônica**, derivada da pesquisa HALE. O projeto explorou uma meta de aproximadamente **200 bytes** por handshake; esse valor não foi validado experimentalmente, e a comparação com o TLS 1.3 ainda não foi medida.
