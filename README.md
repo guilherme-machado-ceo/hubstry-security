@@ -7,7 +7,7 @@
 *Plataforma de cibersegurança com criptografia pós-quântica e autenticação harmônica*
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-lightgrey.svg)](LICENSE)
-[![PQC Ready](https://img.shields.io/badge/PQC-NIST_FIPS_203%2F204%2F205-brightgreen)](post-quantum/README.md)
+[![PQC experimental](https://img.shields.io/badge/PQC-experimental-yellow)](post-quantum/README.md)
 [![TRL 3](https://img.shields.io/badge/TRL-3-orange)](docs/architecture.md)
 [![Security](https://img.shields.io/badge/Security-Policy-blue)](SECURITY.md)
 
@@ -16,16 +16,19 @@
 ---
 ## Incrementos / Latest Implementations
 
-| Módulo | Arquivo | Descrição |
-|--------|---------|-----------|
-| **HSL Auth** | hsl_layer/hsl_auth.py | Autenticação H-Challenge/Response 3 etapas (~200B) |
-| **Detecção de Intrusão** | hsl_layer/intrusion_detection.py | Desvio de fase Δφ > ε |
-| **Rotação LFSR** | hsl_layer/key_rotation.py | Rotação de chaves via LFSR |
-| **π-Radical Operator** | pi_radical/pi_radical.py | Operador π-radical — 6 relações ρ₁-ρ₆ |
-| **Lattice 64 Perfis** | pi_radical/lattice_profiles.py | Lattice de 64 perfis harmônicos |
-| **W Matrix Fixed-Point** | pi_radical/w_matrix.py | Matriz W — ponto fixo espectral |
-| **Bound ρ₃ Quântico** | pi_radical/quantum_bound.py | Limite quântico ρ₃ |
-| **HSL Demo** | demo/hsl_demo.py | Demonstração interativa HSL |
+| Módulo | Arquivo | Descrição | Status |
+|--------|---------|-----------|--------|
+| **HSL Auth v1** | [`hsl/hsl_auth_v1.py`](hsl/hsl_auth_v1.py) | Handshake de 3 mensagens com PSK + HMAC-SHA-256 e MACs direcionais | Experimental |
+| **HSL Auth v0** | [`hsl/hsl_module.py`](hsl/hsl_module.py) | Simulação histórica H-Challenge/Response (meta histórica ~200 B, não validada) | Registro histórico; ver auditoria F-03 |
+| **Detecção de Intrusão** | [`hsl/intrusion_detection.py`](hsl/intrusion_detection.py) | Desvio de fase Δφ > ε | Protótipo |
+| **Rotação LFSR** | [`hsl/lfsr_key_rotation.py`](hsl/lfsr_key_rotation.py) | Rotação de chaves via LFSR | Protótipo |
+| **π-Radical Operator** | — | Operador π-radical — 6 relações ρ₁-ρ₆ | Não presente neste repositório |
+| **Lattice 64 Perfis** | [`quantum/lattice64.py`](quantum/lattice64.py), [`post-quantum/profile_lattice.py`](post-quantum/profile_lattice.py) | Lattice de 64 perfis harmônicos | Ver Current Research Status |
+| **W Matrix Fixed-Point** | — | Matriz W — ponto fixo espectral | Não presente neste repositório |
+| **Bound ρ₃ Quântico** | [`post-quantum/rho3_bound.py`](post-quantum/rho3_bound.py) | Limite quântico ρ₃ | Bloqueado (auditoria 2026-10-03) |
+| **HSL Demo** | `python3 hsl/hsl_module.py` | Demonstração da simulação HSL | Simulação |
+
+> Caminhos corrigidos em 2026-10-05: a versão anterior desta tabela citava `hsl_layer/`, `pi_radical/` e `demo/`, que não existem neste repositório. Ver [`docs/research/hsl-documentation-audit-2026-10.md`](docs/research/hsl-documentation-audit-2026-10.md).
 
 ---
 
@@ -49,6 +52,48 @@ implementação e da quantidade f_ρ₃; o conceito ρ₃ permanece objeto de
 pesquisa. Registro experimental completo:
 [`docs/research/pr1-quantum-encoding.md`](docs/research/pr1-quantum-encoding.md).
 
+**HSL — Harmonic Security Layer** · Status: **hipótese de pesquisa**
+
+**HSL Auth v1 (PSK-HMAC)**, em [`hsl/hsl_auth_v1.py`](hsl/hsl_auth_v1.py), é a versão
+experimental corrigida do handshake. A autenticação se apoia em chave
+pré-compartilhada (PSK) e HMAC-SHA-256; f0 e as fases harmônicas são
+contexto do protocolo, não segredo. Corrige, nesta implementação
+experimental, os achados F-02 a F-09 da auditoria, com 32 testes; não há
+revisão criptográfica externa. Não usa assinatura pós-quântica: a integração
+de ML-DSA ao handshake (F-01b) está pendente. A simulação v0, em [`hsl/hsl_module.py`](hsl/hsl_module.py),
+permanece como registro histórico. Relatório de execução:
+[`docs/research/hsl-v1-execution-report-2026-10.md`](docs/research/hsl-v1-execution-report-2026-10.md).
+
+**Não reivindicado:** tamanho de handshake validado, equivalência de
+segurança com TLS 1.3, resistência quântica, autenticação mútua,
+adequação validada a qualquer ambiente de aplicação. Auditoria documental
+completa e achados de implementação:
+[`docs/research/hsl-documentation-audit-2026-10.md`](docs/research/hsl-documentation-audit-2026-10.md).
+
+**PQC (NIST FIPS 203/204/205)** · Status: **provedor experimental na `main`**
+
+O provedor de criptografia pós-quântica (ML-KEM-768, ML-DSA-65,
+SLH-DSA-SHA2-128s, via liboqs) entrou na `main` com o merge do PR #5 em
+2026-10-05. Os 19 testes da suíte PQC foram reproduzidos de forma
+independente. O provedor ainda não é usado por nenhum fluxo da plataforma,
+incluindo o handshake HSL. Não é uma implementação criptograficamente
+validada. Ver [`post-quantum/README.md`](post-quantum/README.md).
+
+**Estado atual (2026-10-05)**
+
+| Componente | Estado |
+|---|---|
+| HSL v0 | Registro histórico |
+| HSL Auth v1 (PSK-HMAC) | Experimental, implementado e testado |
+| ML-KEM-768, ML-DSA-65, SLH-DSA-SHA2-128s | Provedor experimental na `main`; 19 testes reproduzidos |
+| ML-DSA no handshake HSL | Pendente (F-01b) |
+| CI (integração contínua) | GitHub Actions com três gates independentes: sintaxe, testes gerais e PQC com backend obrigatório ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) |
+| `post-quantum/rho3_bound.py` | Erro de sintaxe corrigido (F-11); módulo continua bloqueado e seus resultados não devem ser citados |
+| Digital Laboratory Twin | Planejado |
+| Validação adversarial integrada | Pendente |
+| TRL 4 | Não estabelecido |
+| QPU / CUDA-Q / cuPQC | Trilha de pesquisa separada do gate de segurança |
+
 ---
 
 ## [PT-BR] Sobre | [EN] About
@@ -57,17 +102,17 @@ pesquisa. Registro experimental completo:
 
 A **Hubstry Security Platform** é uma framework de cibersegurança de propósito geral que integra quatro pilares fundamentais: **Criptografia Pós-Quântica** (NIST FIPS 203/204/205), **Autenticação Harmônica** (HSL — Harmonic Security Layer), **Análise de Vetores de Ataque** (ENISA 2025 + OWASP 2025) e **Conformidade Regulatória** (NIS2, LGPD, NIST CSF 2.0, ISO 27001).
 
-Desenvolvida pela **Hubstry Deep Tech** (fundada em 2023), a plataforma utiliza o framework matemático **HALE** (Harmonic Addressing & Labeling Equation) para derivar hierarquias de chaves baseadas em subdivisões harmônicas racionais de uma frequência fundamental f0, oferecendo separabilidade espectral natural para segmentação de redes e autenticação leve.
+Desenvolvida pela **Hubstry Deep Tech** (fundada em 2023), a plataforma tem origem no framework matemático **HALE** (Harmonic Addressing & Labeling Equation), que originou a investigação sobre subdivisões harmônicas racionais de uma frequência fundamental f0 e seu possível uso em endereçamento, segmentação de redes, contexto e segurança. As propriedades criptográficas dessa abordagem ainda são objeto de investigação experimental.
 
-O módulo **HSL** realiza handshakes de autenticação em aproximadamente **200 bytes**, contra os ~8 KB do TLS 1.3, mantendo resistência computacional equivalente — tornando-o ideal para IoT, telecomunicações e ambientes com recursos limitados.
+O módulo **HSL** investiga a hipótese de uma autenticação mais compacta que os mecanismos convencionais. O projeto explorou uma meta de aproximadamente 200 bytes por handshake; esse valor não foi validado experimentalmente. A implementação atual utiliza uma assinatura simulada como placeholder; a integração de uma assinatura ML-DSA-65 implicará requisitos de tamanho de mensagem significativamente diferentes, a serem medidos no protocolo efetivamente definido. Tamanho efetivo, custo computacional e propriedades de segurança ainda precisam ser medidos e analisados experimentalmente. Aplicações-alvo em investigação: IoT, telecomunicações e ambientes com recursos computacionais restritos.
 
 ### About
 
 The **Hubstry Security Platform** is a general-purpose cybersecurity framework integrating four core pillars: **Post-Quantum Cryptography** (NIST FIPS 203/204/205), **Harmonic Authentication** (HSL — Harmonic Security Layer), **Attack Vector Analysis** (ENISA 2025 + OWASP 2025), and **Regulatory Compliance** (NIS2, LGPD, NIST CSF 2.0, ISO 27001).
 
-Developed by **Hubstry Deep Tech** (founded in 2023), the platform leverages the **HALE** (Harmonic Addressing & Labeling Equation) mathematical framework to derive key hierarchies based on rational harmonic subdivisions of a fundamental frequency f0, providing natural spectral separability for network segmentation and lightweight authentication.
+Developed by **Hubstry Deep Tech** (founded in 2023), the platform originates from the **HALE** (Harmonic Addressing & Labeling Equation) mathematical framework, which started the investigation into rational harmonic subdivisions of a fundamental frequency f0 and their possible use in addressing, network segmentation, context and security. The cryptographic properties of this approach remain under experimental investigation.
 
-The **HSL** module performs authentication handshakes in approximately **200 bytes**, compared to TLS 1.3's ~8 KB, maintaining equivalent computational resistance — making it ideal for IoT, telecommunications, and resource-constrained environments.
+The **HSL** module investigates the hypothesis of a more compact authentication than conventional mechanisms. The project explored a target of approximately 200 bytes per handshake; this value has not been experimentally validated. The current implementation uses a simulated placeholder signature; integrating an ML-DSA-65 signature will imply significantly different message-size requirements, to be measured on the protocol as actually defined. Effective size, computational cost and security properties still need to be measured and analysed experimentally. Target applications under investigation: IoT, telecommunications and resource-constrained environments.
 
 ---
 
@@ -105,7 +150,7 @@ flowchart TD
     H --> CM[Compliance Mapping]
 
     PQC --> PQC1[NIST FIPS 203/204/205]
-    HSL --> HSL1["Autenticação harmônica ~200B"]
+    HSL --> HSL1["Autenticação harmônica (hipótese)"]
     AV --> AV1["Análise ENISA / OWASP"]
     CM --> CM1["NIS2 · LGPD · NIST CSF · ISO 27001"]
 ```
@@ -114,7 +159,7 @@ flowchart TD
 
 | Módulo | Descrição / Description |
 |--------|------------------------|
-| [`post-quantum/`](post-quantum/) | Implementação dos padrões NIST PQC (ML-KEM, ML-DSA, SLH-DSA) com integração HALE |
+| [`post-quantum/`](post-quantum/) | Provedor experimental NIST PQC (ML-KEM, ML-DSA, SLH-DSA) via liboqs; pesquisa pós-quântica |
 | [`hsl/`](hsl/) | Harmonic Security Layer — autenticação baseada em coerência harmônica |
 | [`quantum/`](quantum/) | Trilha de pesquisa quântica (encodings de fase, lattice de 64 perfis) |
 | [`attack-vectors/`](attack-vectors/) | Catálogo de 14+ vetores de ataque mapeados contra ENISA 2025 e OWASP 2025 |
@@ -130,7 +175,7 @@ flowchart TD
 
 - Git 2.40+
 - Python 3.10+ (para exemplos de referência)
-- liboqs 0.10+ (para exemplos PQC)
+- liboqs 0.16.0 + liboqs-python 0.16.0: necessários para usar o provedor PQC e executar `tests/pqc`. Sem eles, a suíte PQC é pulada (*skip*) localmente, o que não equivale a aprovação; com `HUBSTRY_REQUIRE_PQC=1` (usado no CI), a ausência do backend é uma falha
 
 ### Clonar / Clone
 
@@ -139,7 +184,9 @@ git clone https://github.com/guilherme-machado-ceo/hubstry-security.git
 cd hubstry-security
 ```
 
-### Exemplo PQC — ML-KEM-768 com HALE
+### Exemplo ilustrativo — derivação HALE
+
+> **Ilustrativo e não funcional.** Este trecho não usa ML-KEM: a função calcula `fk` e o descarta, devolvendo o mesmo hash de `f0` para qualquer nível. Mantido como registro histórico; ver auditoria C05.
 
 ```python
 from hashlib import sha256
@@ -157,9 +204,11 @@ def hale_key_derivation(f0, level, b):
 
 | Fase | Período | TRL | Entregáveis |
 |------|------------|-----|-------------|
-| **Fase 1** | Q2 2026 | 3-4 | Validação laboratorial do HSL; benchmarks contra TLS 1.3 |
-| **Fase 2** | Q3 2026 | 4-5 | Integração ML-KEM-768 + HSL; PoC em ambiente controlado |
-| **Fase 3** | Q1 2027 | 5-6 | Testes com parceiro telecom; conformidade NIS2 validada |
+| **Fase 1** | A definir (original: Q2 2026) | 3-4 | Validação laboratorial do HSL; benchmarks contra TLS 1.3 |
+| **Fase 2** | A definir (original: Q3 2026) | 4-5 | Integração ML-KEM-768 + HSL; PoC em ambiente controlado |
+| **Fase 3** | A definir (original: Q1 2027) | 5-6 | Testes com parceiro de validação; conformidade NIS2 validada |
+
+> As fases 1 e 2 não foram concluídas nos prazos originais e serão replanejadas; a fase 3 depende delas. As datas originais aparecem apenas como registro histórico; novas datas ainda não foram definidas.
 
 Veja o roadmap completo em [`roadmap/2026-2027.md`](roadmap/2026-2027.md).
 

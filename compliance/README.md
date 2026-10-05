@@ -4,6 +4,10 @@
 
 ---
 
+> **Mapeamento-alvo.** As colunas "Mapeamento Hubstry" indicam controles planejados. Controles que dependem de PQC ou do HSL ainda não estão implementados na `main`. Ver [`docs/research/hsl-documentation-audit-2026-10.md`](../docs/research/hsl-documentation-audit-2026-10.md).
+>
+> **Target mapping.** The "Mapeamento Hubstry" columns list planned controls; those depending on PQC or HSL are not yet implemented on `main`.
+
 ## Frameworks Mapeados / Mapped Frameworks
 
 | Framework | Jurisdição / Jurisdiction | Versão |
@@ -24,9 +28,9 @@
 | Art. 21(2)(b) | Treinamento de segurança | roadmap/2026-2027.md (Fase 1) |
 | Art. 21(2)(c) | Proteção contra incidentes | attack-vectors/ (14 vetores mapeados) |
 | Art. 21(2)(d) | Continuidade de operações | compliance/ (playbook P1-P4) |
-| Art. 21(2)(g) | Criptografia em trânsito | PQC Module (ML-KEM-768 + AES-256-GCM) |
+| Art. 21(2)(g) | Criptografia em trânsito | PQC Module (ML-KEM-768 + AES-256-GCM) — controle planejado |
 | Art. 21(2)(h) | Segurança da cadeia de suprimentos | SBOM, signed artifacts |
-| Art. 21(2)(i) | Autenticação multifator | HSL coherence token + ML-DSA-65 |
+| Art. 21(2)(i) | Autenticação multifator | HSL coherence token + ML-DSA-65 — controle planejado |
 
 ---
 
@@ -34,7 +38,7 @@
 
 | Artigo | Requisito | Mapeamento Hubstry |
 |--------|-----------|-------------------|
-| Art. 46 | Segurança técnica | PQC encryption at rest + in transit |
+| Art. 46 | Segurança técnica | PQC encryption at rest + in transit — controle planejado |
 | Art. 48 | Registro de operações | Audit trail por canal harmônico |
 | Art. 49 | Notificação de incidentes | Incident response playbook (P1: 15min) |
 
@@ -46,7 +50,7 @@
 |----------|----------|-------------------|
 | **GOVERN** | GV.OC | Políticas de governança em SECURITY.md |
 | **IDENTIFY** | ID.AM | HALE node registry (harmonic addressing) |
-| **PROTECT** | PR.AA | HSL authentication + ML-DSA-65 |
+| **PROTECT** | PR.AA | HSL authentication + ML-DSA-65 — controle planejado |
 | **DETECT** | DE.CM | Threat Intel (14 attack vectors monitorados) |
 | **RESPOND** | RS.RP | Incident response playbook P1-P4 |
 | **RECOVER** | RC.RP | Backup harmônico, recovery procedures |
@@ -96,7 +100,6 @@ T+24h:    Post-mortem -> relatório de lições aprendidas
 
 | Edital / Call | Órgão | Status |
 |---------------|-------|--------|
-| CISSA Chamada de Cibersegurança 2025 | CISSA/EMBRAPII/CESAR | Submetido |
 | MCTI Chamada CNPq PQ | MCTI/CNPq | Planejado |
 | FAPESP PIPE | FAPESP | Planejado |
 | BNDES Funtec | BNDES | Planejado |
