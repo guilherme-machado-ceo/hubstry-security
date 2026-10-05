@@ -59,21 +59,23 @@ The Hubstry Security Platform implements a dual-layer security architecture:
 
 ### 2.1 H-Challenge/Response Protocol (Paper 4)
 
-The 3-step protocol establishes mutual authentication using phase-encoded
-challenges derived from harmonic frequency subdivisions:
+> **Status: research hypothesis.** Sizes below compare the historical design target with the current simulation. No security property listed here has been validated. See [`research/hsl-documentation-audit-2026-10.md`](research/hsl-documentation-audit-2026-10.md).
 
-| Step | Direction | Content | Size |
-|------|-----------|---------|------|
-| 1. Challenge | Alice -> Bob | H_Challenge(phase_A, nonce_A, t_A) | ~48 B |
-| 2. Response | Bob -> Alice | H_Response(phase_B, sigma_A_B, nonce_B) | ~48 B |
-| 3. Verify | Alice -> Bob | H_Verify(token_AB, sign_A, session_id) | ~104 B |
-| **Total** | | | **~200 B** |
+The 3-step protocol is designed to establish mutual authentication using
+phase-encoded challenges derived from harmonic frequency subdivisions:
 
-**Security properties:**
-- **Replay protection:** Nonce (32 bytes) + timestamp (60s window)
-- **Phase coherence:** Mutual proof of shared f0 knowledge
-- **Quantum resistance:** Composable with ML-DSA-65 (FIPS 204)
-- **Forward secrecy:** Ephemeral harmonic phases per session
+| Step | Direction | Content | Design target | Current simulation |
+|------|-----------|---------|------|------|
+| 1. Challenge | Alice -> Bob | H_Challenge(phase_A, nonce_A, t_A) | ~48 B | 44 B + node_id |
+| 2. Response | Bob -> Alice | H_Response(phase_B, sigma_A_B, nonce_B) | ~48 B | 68 B + node_id |
+| 3. Verify | Alice -> Bob | H_Verify(token_AB, sign_A, session_id) | ~104 B | 113 B (placeholder signature) |
+| **Total** | | | **~200 B (not validated)** | **249 B in the reference run** |
+
+**Security properties (design objectives):**
+- **Replay protection:** Nonce (32 bytes) + timestamp (60s window). *Partial: time window checked; no record of used nonces.*
+- **Phase coherence:** Mutual proof of shared f0 knowledge. *Not implemented as mutual: only the responder produces a proof; step 3 is not verified.*
+- **Quantum resistance:** Composable with ML-DSA-65 (FIPS 204). *Not implemented: step 3 uses a placeholder signature.*
+- **Forward secrecy:** Ephemeral harmonic phases per session. *Not implemented: the phase is deterministic per node_id.*
 
 Reference: `hsl/hsl_module.py`
 
@@ -165,6 +167,8 @@ Reference: `post-quantum/quantum_profiles.py`
 
 ### 4.1 HSL + Post-Quantum Composition
 
+> **Target composition, not implemented.** The rho_3 bound (steps 3 and the threat model below) was audited on 2026-10-03 as experimentally invalid and scientifically blocked; it must not be relied on as a defense. ML-DSA-65 is not yet integrated (see PR #5).
+
 ```
 Authentication Flow:
   1. HSL H-Challenge/Response (phase coherence)
@@ -178,13 +182,15 @@ Authentication Flow:
 
 | Threat | HSL Defense | PQ Defense |
 |--------|-------------|------------|
-| Quantum brute force | N/A | rho_3 bound limits info leakage |
+| Quantum brute force | N/A | rho_3 bound limits info leakage *(blocked, 2026-10-03)* |
 | Replay attack | Nonce + timestamp | N/A |
 | Phase spoofing | Intrusion detection | Consistency projection |
 | Key compromise | LFSR rotation | PQC key encapsulation |
-| MITM | Mutual auth (3-step) | rho_3 + ML-DSA-65 |
+| MITM | Mutual auth (3-step) *(not implemented)* | rho_3 *(blocked)* + ML-DSA-65 *(planned)* |
 
 ### 4.3 Compliance Mapping
+
+> Target mapping. The HSL and PQ components listed are design objectives; see status notes above.
 
 | Standard | HSL Component | PQ Component |
 |----------|---------------|--------------|
@@ -205,8 +211,8 @@ Authentication Flow:
 | LFSR register | 32 bits | Paper 4 |
 | LFSR taps | [16, 14, 13, 11] | Paper 4 |
 | Consistent profiles | 7 of 64 | Paper 2 |
-| rho_3 bound | F <= 1.0 | Paper 2 |
-| HSL handshake | ~200 bytes | Paper 4 |
+| rho_3 bound | F <= 1.0 *(blocked, 2026-10-03)* | Paper 2 |
+| HSL handshake | ~200 bytes *(historical design target, not validated)* | Paper 4 |
 
 ### 5.2 NIST Security Levels
 
