@@ -6,9 +6,9 @@
 
 ## Visão Geral / Overview
 
-Este módulo implementa a integração dos padrões **NIST Post-Quantum Cryptography** com o framework **HALE** (Harmonic Addressing & Labeling Equation) da Hubstry.
+Este módulo contém um provedor experimental dos padrões **NIST Post-Quantum Cryptography**, implementado sobre a biblioteca liboqs. O framework **HALE** (Harmonic Addressing & Labeling Equation) da Hubstry entra apenas como contexto de transcript e separação de domínio (ver fronteira G4 abaixo); não é fonte de chaves nem de entropia.
 
-This module implements the integration of **NIST Post-Quantum Cryptography** standards with the Hubstry **HALE** (Harmonic Addressing & Labeling Equation) framework.
+This module contains an experimental provider of **NIST Post-Quantum Cryptography** standards built on the liboqs library. The Hubstry **HALE** (Harmonic Addressing & Labeling Equation) framework enters only as transcript context and domain separation (see boundary G4 below); it is not a source of keys or entropy.
 
 ---
 
@@ -42,7 +42,13 @@ session key
 ML-DSA-65 / SLH-DSA-SHA2-128s → transcript authentication
 ```
 
-**Sandbox validation (OBSERVED, 2026-10, liboqs 0.16.0):** tests T0–T10 passing, incl. RFC 5869 HKDF vectors, info-encoding injectivity, and full-transcript session-key binding. CPU baseline (sandbox VM): ML-KEM-768 ops ≈ 0.05 ms median; ML-DSA-65 sign ≈ 0.21 ms; SLH-DSA-SHA2-128s sign ≈ 1.8 s (documented as slow; agility alternative, not default). No security-level inference from timings.
+**Sandbox validation (historical evidence, 2026-10, liboqs 0.16.0, original environment):** tests T0–T10 passing, incl. RFC 5869 HKDF vectors, info-encoding injectivity, and full-transcript session-key binding. CPU baseline (sandbox VM): ML-KEM-768 ops ≈ 0.05 ms median; ML-DSA-65 sign ≈ 0.21 ms; SLH-DSA-SHA2-128s sign ≈ 1.8 s (documented as slow; agility alternative, not default). No security-level inference from timings.
+
+**Independent reproduction (2026-10-05):** 19/19 tests passing against liboqs 0.16.0 built from the official source (tag `0.16.0`), on this branch updated over `main` `e0055b6`. CPU medians in that environment (2 cores, x86_64): ML-KEM-768 ops ≈ 0.02 ms; ML-DSA-65 sign ≈ 0.14 ms; SLH-DSA-SHA2-128s sign ≈ 0.54 s. Timings depend on the environment and differ from the historical run; no security or performance inference. Report: [`docs/research/pr5-pqc-reproduction-report-2026-10.md`](../docs/research/pr5-pqc-reproduction-report-2026-10.md).
+
+**Backend naming:** liboqs 0.16.0 registers SLH-DSA-SHA2-128s as `SLH_DSA_PURE_SHA2_128S`. The mapping lives only in `oqs_adapter.py`; a manual availability check using the standard name returns a false negative.
+
+**Relation to HSL:** HSL Auth v1 (`hsl/hsl_auth_v1.py`) does not use this provider. Integrating an ML-DSA signature into the HSL handshake (audit finding F-01) is future work and requires its own specification and tests.
 
 **T4 scope note:** T4 is a pre-Digital-Twin property test — it verifies that a tampered ciphertext breaks transcript authentication. It does **not** validate a full two-party handshake with accept/reject session rules; that validation belongs to the Digital Laboratory Twin phase.
 
@@ -122,7 +128,7 @@ Hybrid Handshake:
 
 ### Exemplo legado / Legacy example (superseded)
 
-O código histórico em `examples/hale_mlkem.py` (classe `HALEKeyHierarchy`,
+O código histórico em `examples/hale_mlkem.py` (arquivo não presente neste repositório; classe `HALEKeyHierarchy`,
 derivação `phi(b)^level × f0 → SHA-256`) pertence ao design placeholder
 anterior e **não** faz parte do provider atual. O PR2 gera chaves ML-KEM
 exclusivamente via RNG do liboqs/SO.
