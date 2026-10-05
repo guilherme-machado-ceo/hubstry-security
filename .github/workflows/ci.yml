@@ -1,0 +1,117 @@
+# Hubstry Security — continuous integration (findings F-10, F-11).
+#
+# Three independent jobs, so that "tests passed" is never read as
+# "the whole repository is valid":
+#   syntax         compileall over every Python package directory
+#   general-tests  pytest tests/ (excluding the PQC suite)
+#   pqc            liboqs 0.16.0 built from source + tests/pqc with
+#                  HUBSTRY_REQUIRE_PQC=1 (missing backend = failure)
+#
+# Security posture: read-only token, pull_request (never
+# pull_request_target), no secrets used.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  LIBOQS_VERSION: "0.16.0"
+  LIBOQS_COMMIT: "5a1a854b0dc9f2141bdc771c555ee60c37950183"
+  LIBOQS_PYTHON_VERSION: "0.16.0"
+
+jobs:
+  syntax:
+    name: syntax (compileall)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Compile all Python sources
+        run: python -m compileall -q quantum hsl post-quantum tests
+
+  general-tests:
+    name: general tests (pytest tests/, without PQC)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install test dependencies
+        run: python -m pip install pytest -r requirements-quantum.txt
+      - name: Run tests
+        run: python -m pytest tests/ --ignore=tests/pqc -v
+
+  pqc:
+    name: pqc (liboqs 0.16.0, backend required)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      OQS_INSTALL_PATH: ${{ github.workspace }}/.oqs-install
+      HUBSTRY_REQUIRE_PQC: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Restore liboqs build cache
+        id: liboqs-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.OQS_INSTALL_PATH }}
+          key: liboqs-${{ runner.os }}-${{ runner.arch }}-${{ env.LIBOQS_VERSION }}-${{ env.LIBOQS_COMMIT }}
+
+      - name: Build liboqs from source
+        if: steps.liboqs-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+          git clone --depth 1 --branch "${LIBOQS_VERSION}" https://github.com/open-quantum-safe/liboqs.git ../liboqs-src
+          test "$(git -C ../liboqs-src rev-parse HEAD)" = "${LIBOQS_COMMIT}"
+          cmake -S ../liboqs-src -B ../liboqs-src/build -GNinja \
+            -DBUILD_SHARED_LIBS=ON -DOQS_BUILD_ONLY_LIB=ON \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${OQS_INSTALL_PATH}"
+          ninja -C ../liboqs-src/build install
+
+      - name: Install Python dependencies
+        run: python -m pip install "liboqs-python==${LIBOQS_PYTHON_VERSION}" pytest
+
+      - name: Record environment
+        run: |
+          echo "LD_LIBRARY_PATH=${OQS_INSTALL_PATH}/lib" >> "$GITHUB_ENV"
+          export LD_LIBRARY_PATH="${OQS_INSTALL_PATH}/lib"
+          python - <<'PY'
+          import importlib.metadata as md, platform
+          import oqs
+          print("python        :", platform.python_version())
+          print("os            :", platform.platform())
+          print("architecture  :", platform.machine())
+          print("pytest        :", md.version("pytest"))
+          print("liboqs-python :", md.version("liboqs-python"))
+          print("liboqs        :", oqs.oqs_version())
+          PY
+
+      - name: Run PQC suite (backend required)
+        run: python -m pytest tests/pqc -v
