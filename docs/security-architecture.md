@@ -167,7 +167,7 @@ Reference: `post-quantum/quantum_profiles.py`
 
 ### 4.1 HSL + Post-Quantum Composition
 
-> **Target composition, not implemented.** The rho_3 bound (steps 3 and the threat model below) was audited on 2026-10-03 as experimentally invalid and scientifically blocked; it must not be relied on as a defense. ML-DSA-65 is not yet integrated (see PR #5).
+> **Target composition, not implemented.** The rho_3 bound (steps 3 and the threat model below) was audited on 2026-10-03 as experimentally invalid and scientifically blocked; it must not be relied on as a defense. The ML-DSA-65 provider is on `main` since PR #5 (2026-10-05), but it is not integrated into the HSL flow (finding F-01b).
 
 ```
 Authentication Flow:

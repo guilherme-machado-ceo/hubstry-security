@@ -10,7 +10,7 @@ A Hubstry Security Platform é organizada como um framework modular onde cada co
 
 1. **HALE Core** — Motor matemático baseado na Harmonic Addressing & Labeling Equation. Propõe utilizar subdivisões harmônicas racionais de uma frequência fundamental f0 para derivar endereços, chaves criptográficas e tokens de autenticação. A função totiente de Euler phi(b) é aplicada para construir hierarquias de chaves multinível. *Status: proposta de pesquisa; hierarquia de chaves não implementada na `main`.*
 
-2. **PQC Module** — Prevê os três padrões NIST pós-quânticos (FIPS 203, 204, 205) e operações híbridas (clássico + PQ) durante o período de transição. *Status: provedor experimental em revisão no PR #5; ainda não integrado à `main`. A integração com o HALE Core para derivação de chaves é objetivo de pesquisa.*
+2. **PQC Module** — Prevê os três padrões NIST pós-quânticos (FIPS 203, 204, 205) e operações híbridas (clássico + PQ) durante o período de transição. *Status: provedor experimental na `main` desde o merge do PR #5 (2026-10-05); ainda não usado por nenhum fluxo da plataforma. Operações híbridas não implementadas. A integração com o HALE Core para derivação de chaves é objetivo de pesquisa.*
 
 3. **HSL Engine** — Harmonic Security Layer. Propõe handshakes de autenticação baseados em coerência harmônica. O projeto explorou uma meta de aproximadamente 200 bytes para o handshake completo (challenge + response + verification); esse valor não foi validado experimentalmente. *Status: hipótese de pesquisa; simulação em `hsl/hsl_module.py` com assinatura placeholder.*
 
@@ -25,7 +25,7 @@ Cliente/Node  -->  HSL Engine  -->  HALE Core  -->  PQC Module
                        |               |               |
                   Coherence        Key Hierarchy    ML-KEM-768
                   Token            (phi-based)     ML-DSA-65
-                  (hipótese)       (proposta)      (PR #5)
+                  (hipótese)       (proposta)      (provedor)
                                                        |
                                               Compliance Engine
                                               (audit log + metrics)
@@ -50,7 +50,7 @@ The Hubstry Security Platform is organized as a modular framework where each com
 
 1. **HALE Core** — Mathematical engine based on the Harmonic Addressing & Labeling Equation. Proposes using rational harmonic subdivisions of a fundamental frequency f0 to derive addresses, cryptographic keys, and authentication tokens. Euler''s totient function phi(b) is applied to construct multilevel key hierarchies. *Status: research proposal; key hierarchy not implemented on `main`.*
 
-2. **PQC Module** — Targets the three NIST post-quantum standards (FIPS 203, 204, 205) and hybrid operations (classical + PQ) during the transition period. *Status: experimental provider under review in PR #5; not yet merged into `main`. Integration with the HALE Core for key derivation is a research objective.*
+2. **PQC Module** — Targets the three NIST post-quantum standards (FIPS 203, 204, 205) and hybrid operations (classical + PQ) during the transition period. *Status: experimental provider on `main` since PR #5 was merged (2026-10-05); not yet used by any platform flow. Hybrid operations not implemented. Integration with the HALE Core for key derivation is a research objective.*
 
 3. **HSL Engine** — Harmonic Security Layer. Proposes authentication handshakes based on harmonic coherence. The project explored a target of approximately 200 bytes for the complete handshake (challenge + response + verification); this value has not been experimentally validated. *Status: research hypothesis; simulation in `hsl/hsl_module.py` with a placeholder signature.*
 
