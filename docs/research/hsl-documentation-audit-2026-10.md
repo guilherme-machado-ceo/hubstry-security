@@ -22,10 +22,26 @@ Nenhuma afirmação é eliminada só porque não está implementada. Cada uma é
 | **Não demonstrado** | Não há código, teste ou medição que sustente a afirmação. |
 | **Contradito** | O código ou o próprio registro do repositório mostra o contrário. |
 | **Não auditado** | Fora do que foi verificado nesta rodada. |
+| **Sem evidência** | Afirmação factual sobre atividade externa (comercial, institucional) sem documentação que a sustente. Não é tratada como meta nem hipótese: é removida ou reescrita como intenção futura. |
 
 ### Natureza da afirmação
 
 `HIS` histórico/meta · `ARQ` arquitetura · `IMP` implementação · `SEG` segurança · `ROA` roadmap · `COM` comercial
+
+### Regra para afirmações comerciais
+
+Nenhuma empresa é apresentada como prospect, parceira, cliente, piloto ou negociação sem evidência correspondente. As categorias abaixo são distintas e não podem ser misturadas em documento público:
+
+| Categoria | Evidência mínima |
+|---|---|
+| Alvo (setor ou empresa de interesse) | Nenhuma; deve ser redigido como intenção e, de preferência, por setor |
+| Contatada | Registro de contato iniciado |
+| Em negociação | Troca documentada de proposta ou termos |
+| Parceira | Instrumento firmado (acordo, memorando, carta de intenção) |
+| Cliente | Contrato ou pedido |
+| Piloto | Instrumento de piloto e escopo acordado |
+
+O histórico do Git é público e permanente; uma afirmação desse tipo deixa registro verificável mesmo depois de corrigida.
 
 ---
 
@@ -34,7 +50,8 @@ Nenhuma afirmação é eliminada só porque não está implementada. Cada uma é
 1. Leitura de `hsl/hsl_module.py` (único módulo de handshake do HSL na `main`) e inventário de `post-quantum/`.
 2. Execução da simulação de referência incluída no próprio módulo (`python3 hsl/hsl_module.py`) e de um teste mínimo de aceitação (seção 6).
 3. Busca sistemática de afirmações em 11 arquivos `.md`: `README.md`, `hsl/README.md`, `docs/architecture.md`, `docs/security-architecture.md`, `roadmap/2025-2026.md`, `roadmap/2026-2027.md`, `attack-vectors/README.md`, `compliance/README.md`, `SECURITY.md`, `post-quantum/README.md`, `quantum/README.md`.
-4. Os números de linha referem-se ao snapshot `94414dc`.
+4. Varredura de nomes de empresas e de termos comerciais (parceiro, cliente, piloto, negociação, carta de intenção) em todos os arquivos `.md`.
+5. Os números de linha referem-se ao snapshot `94414dc`.
 
 **Limites do método.** `hsl/intrusion_detection.py` e `hsl/lfsr_key_rotation.py` não foram auditados nesta rodada. Não houve revisão criptográfica formal; os achados da seção 5 descrevem o comportamento observável do código.
 
@@ -50,6 +67,7 @@ Nenhuma afirmação é eliminada só porque não está implementada. Cada uma é
 | PQC na `main` | Contradito. A `main` não contém implementação de ML-KEM, ML-DSA ou SLH-DSA; o provedor real está no PR #5 (rascunho). |
 | HALE como derivação de chaves | Não demonstrado. Não há hierarquia de chaves implementada na `main`; o exemplo do README devolve o mesmo valor em todos os níveis (C05). |
 | Autenticação do HSL | A construção atual não fornece autenticação criptográfica baseada em segredo quando `f0` assume o valor padrão documentado (F-03). |
+| Afirmações comerciais | Uma única menção nominal a empresas (C33: Claro, TIM, Vivo) e uma menção genérica a funil de parceiros (C36), ambas sem evidência. As demais referências a "parceiro telecom" ou "piloto" aparecem como entregas futuras de roadmap e estão corretas como metas. |
 | Disciplina de pesquisa | `quantum/README.md` e a seção "Current Research Status" do README já seguem o padrão correto de não reivindicação; servem de modelo para a requalificação. |
 
 ---
@@ -112,7 +130,8 @@ Nenhuma afirmação é eliminada só porque não está implementada. Cada uma é
 | C30 | `roadmap/2025-2026.md:50–52` | F0-04 a F0-06 "Done", incluindo o limite ρ₃ | ROA | ρ₃ bloqueado (ver C24). | Contradito (pelo registro do repositório) | Anotar "bloqueado em 2026-10-03". |
 | C31 | `roadmap/2025-2026.md:84–85` | "Current Target": ~200 B, ~0,3 ms P99 | HIS | Rotulado como meta. | Meta de projeto | Manter; acrescentar "não medido". |
 | C32 | `roadmap/2026-2027.md:30, 40, 43` | Benchmark HSL × TLS 1.3 (jun/2026) e paper HALE em conferência (jul/2026) | ROA | Não há relatório de benchmark no repositório. | Meta de projeto (vencida) | "Replanejado". |
-| C33 | `roadmap/2026-2027.md:104` | "Múltiplos parceiros prospectados (Claro, TIM, Vivo)" | COM | Não verificável no repositório. | Não auditado | Confirmar com o PI antes de manter nomes de empresas em documento público. |
+| C33 | `roadmap/2026-2027.md:104` | "Múltiplos parceiros prospectados (Claro, TIM, Vivo)", como mitigação de risco | COM | Nenhuma evidência documental de contato foi fornecida; o PI confirmou em 2026-10-05 que os nomes devem sair. | Sem evidência | Remover os três nomes. Reescrever como intenção futura, sem sugerir atividade comercial ocorrida. |
+| C36 | `roadmap/2025-2026.md:176` | Mitigação "Multiple partner pipeline" | COM | Pressupõe um funil de parceiros existente; nenhuma evidência fornecida. | Sem evidência | Reescrever como intenção futura ("prospecção de múltiplos parceiros prevista"). |
 | C34 | `post-quantum/README.md:25, 35, 49–60, 84` | Hierarquia de chaves HALE; assinatura "HALE-PQ" com ML-DSA-65; `examples/hale_mlkem.py` | ARQ · IMP | Diretório `examples/` inexistente; sem implementação na `main`. | Contradito · Não demonstrado | **Não editar neste PR.** O arquivo também é alterado pelo PR #5; a requalificação acontece na revisão do PR #5. |
 | C35 | `quantum/README.md:3–5, 99, 110` | Não reivindica segurança quântica, vantagem quântica nem nível criptográfico | — | Coerente com o código. | Observado | Manter. Modelo de redação para os demais. |
 
@@ -166,4 +185,6 @@ Requalificação documental conforme a coluna "Tratamento proposto", em 10 arqui
 
 Fora do Commit 2: `post-quantum/README.md` (PR #5), qualquer arquivo `.py`, e os achados F-01 a F-10.
 
-**Decisões pendentes do PI:** novas datas do roadmap (C07, C21, C32); manutenção dos nomes de empresas em C33.
+**Decidido pelo PI (2026-10-05):** remoção dos nomes de empresas em C33, aplicada no Commit 2.
+
+**Decisões pendentes do PI:** novas datas do roadmap (C07, C21, C32); redação de substituição em C33 e C36.
