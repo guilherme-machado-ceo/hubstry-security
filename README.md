@@ -87,8 +87,8 @@ validada. Ver [`post-quantum/README.md`](post-quantum/README.md).
 | HSL Auth v1 (PSK-HMAC) | Experimental, implementado e testado |
 | ML-KEM-768, ML-DSA-65, SLH-DSA-SHA2-128s | Provedor experimental na `main`; 19 testes reproduzidos |
 | ML-DSA no handshake HSL | Pendente (F-01b) |
-| CI (integração contínua) | Pendente (F-10) |
-| `post-quantum/rho3_bound.py` | Erro de sintaxe conhecido (F-11); módulo bloqueado |
+| CI (integração contínua) | GitHub Actions com três gates independentes: sintaxe, testes gerais e PQC com backend obrigatório ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) |
+| `post-quantum/rho3_bound.py` | Erro de sintaxe corrigido (F-11); módulo continua bloqueado e seus resultados não devem ser citados |
 | Digital Laboratory Twin | Planejado |
 | Validação adversarial integrada | Pendente |
 | TRL 4 | Não estabelecido |
@@ -175,7 +175,7 @@ flowchart TD
 
 - Git 2.40+
 - Python 3.10+ (para exemplos de referência)
-- liboqs 0.16.0 + liboqs-python 0.16.0: necessários para usar o provedor PQC e executar `tests/pqc`. Sem eles, a suíte PQC é pulada (*skip*), o que não equivale a aprovação
+- liboqs 0.16.0 + liboqs-python 0.16.0: necessários para usar o provedor PQC e executar `tests/pqc`. Sem eles, a suíte PQC é pulada (*skip*) localmente, o que não equivale a aprovação; com `HUBSTRY_REQUIRE_PQC=1` (usado no CI), a ausência do backend é uma falha
 
 ### Clonar / Clone
 

@@ -33,7 +33,7 @@ This module contains an experimental provider of **NIST Post-Quantum Cryptograph
 
 Integração / Integration: os três estão na `main` desde o merge do PR #5 (2026-10-05); nenhum é usado por fluxos da plataforma, e nenhum está integrado ao handshake HSL (finding F-01b). / All three are on `main` since PR #5 was merged (2026-10-05); none is used by platform flows, and none is integrated into the HSL handshake (finding F-01b).
 
-**Open items from the PR #5 review (non-blocking):** (1) in CI, an unavailable liboqs backend must fail the PQC suite instead of skipping it; (2) `_assert_sizes()` should raise explicit exceptions instead of using `assert`; (3) the future HSL integration must apply `derive_session_key()` only to a canonical, versioned transcript, never to arbitrary caller-supplied bytes.
+**Items from the PR #5 review (non-blocking):** (1) addressed in the CI PR: with `HUBSTRY_REQUIRE_PQC=1` an unavailable liboqs backend fails the PQC suite; (2) addressed in the CI PR: `_assert_sizes()` raises `BackendSizeMismatchError`; (3) open: the future HSL integration must apply `derive_session_key()` only to a canonical, versioned transcript, never to arbitrary caller-supplied bytes.
 
 ML-KEM-512/1024 are valid FIPS 203 parameter sets but are **out of PR2 scope** (re-adding requires explicit test-matrix coverage or a new specification cycle). FN-DSA: watchlist, **blocked**. HQC: NIST-selected (not yet standardized), watchlist.
 

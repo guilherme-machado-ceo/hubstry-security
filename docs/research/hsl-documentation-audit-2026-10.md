@@ -202,8 +202,10 @@ Fora do Commit 2: `post-quantum/README.md` (PR #5), qualquer arquivo `.py`, e os
 |---|---|---|
 | 2026-10-05 | F-02, F-03, F-04, F-05, F-06, F-07, F-08, F-09 | Corrigidos na implementação experimental `hsl/hsl_auth_v1.py` (HSL Auth v1, PSK-HMAC), com testes; sem revisão criptográfica externa. A v0 (`hsl/hsl_module.py`) não foi alterada e os achados continuam reproduzíveis nela por `tests/test_hsl_v0_regression.py`. Ver [`hsl-v1-execution-report-2026-10.md`](hsl-v1-execution-report-2026-10.md). |
 | 2026-10-05 | F-01 | Aberto, em duas partes: (a) provedor ML-DSA-65 implementado e reproduzido no PR #5, efetivo na `main` somente após o merge daquele PR; (b) integração de ML-DSA ao handshake HSL v1 pendente, em ciclo próprio. F-01 não deve ser marcado como resolvido enquanto (b) estiver pendente. |
-| 2026-10-05 | F-10 | Aberto. |
+| 2026-10-05 | F-10 | Aberto. Tratado no PR de CI: workflow com três gates independentes (sintaxe, testes gerais, PQC com backend obrigatório). |
 | 2026-10-05 | F-01 (atualização) | PR #5 mergeado na `main` (`1c346e4`): parte (a), provedor ML-DSA-65, efetiva. Parte (b), integração ao handshake HSL v1, pendente (F-01b). F-01 permanece aberto. |
 | 2026-10-05 | Reconciliação pós-merge | Documentação corrente atualizada para o estado após os merges dos PRs #5, #6 e #7; os relatórios datados em `docs/research/` permanecem como registro do momento em que foram escritos. |
 | 2026-10-05 | C34 (`post-quantum/README.md`) | Requalificado no PR #5. Ver [`pr5-pqc-reproduction-report-2026-10.md`](pr5-pqc-reproduction-report-2026-10.md). |
 | 2026-10-05 | F-11 (novo) | `post-quantum/rho3_bound.py:355` contém um erro de sintaxe (`positional argument follows keyword argument`); nenhum teste importa o módulo. Identificado por revisão independente e reproduzido. Aberto; encaminhado ao PR de CI (F-10). |
+| 2026-10-05 | F-11 (correção) | Erro de sintaxe corrigido nas quatro chamadas afetadas (linhas 355, 356, 359, 360), passando `label` como argumento nomeado. Alteração apenas sintática; o módulo continua bloqueado. |
+| 2026-10-05 | Revisão do PR #5, itens 1 e 2 | `_assert_sizes()` passa a lançar `BackendSizeMismatchError` (verificação ativa também sob `python -O`); suíte PQC falha em vez de ser pulada quando `HUBSTRY_REQUIRE_PQC=1`. Item 3 permanece para o ciclo F-01b. |
