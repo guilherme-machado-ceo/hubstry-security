@@ -193,3 +193,13 @@ Fora do Commit 2: `post-quantum/README.md` (PR #5), qualquer arquivo `.py`, e os
 - fases sem novas datas: as datas originais aparecem apenas como registro, no formato "A definir (original: …)", para não sugerir prazo vigente. Regra de dependência: quando uma etapa depende de outra cujo novo prazo ainda não foi definido, seu prazo também passa a "A definir". Por isso a fase 3 e seus entregáveis, embora não vencidos, seguem o mesmo formato.
 
 **Pendente:** novas datas do roadmap, a definir pelo PI quando houver decisão sobre os próximos marcos técnicos e comerciais; rodada própria para C25 e C38.
+
+---
+
+## 8. Acompanhamento
+
+| Data | Achados | Situação |
+|---|---|---|
+| 2026-10-05 | F-02, F-03, F-04, F-05, F-06, F-07, F-08, F-09 | Corrigidos na nova implementação experimental `hsl/hsl_auth_v1.py` (HSL Auth v1, PSK-HMAC). A v0 (`hsl/hsl_module.py`) não foi alterada e os achados continuam reproduzíveis nela por `tests/test_hsl_v0_regression.py`. Ver [`hsl-v1-execution-report-2026-10.md`](hsl-v1-execution-report-2026-10.md). |
+| 2026-10-05 | F-01 | Aberto. Depende do provedor PQC do PR #5. |
+| 2026-10-05 | F-10 | Aberto. |
