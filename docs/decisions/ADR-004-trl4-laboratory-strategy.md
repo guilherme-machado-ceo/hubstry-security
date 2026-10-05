@@ -21,6 +21,10 @@ Build the validation path in this order:
 6. only then evaluate NVIDIA acceleration as a separate provider/backend;
 7. keep QPU, rho3 and other speculative quantum tracks isolated from the TRL4 security-engineering gate.
 
+### Note — 2026-10-05
+
+Step 1 of this decision (CPU/liboqs PQC baseline) was established by PR #5 (provider) and PR #9 (CI gate with the real liboqs backend). The decision itself is unchanged; steps 2–7 remain in the stated order.
+
 ## Consequences
 
 ### Positive

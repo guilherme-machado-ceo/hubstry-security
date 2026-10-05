@@ -48,3 +48,7 @@ The framework identifies requirements around the mapping function psi, including
 ## 7. Source limitation
 
 This audit is a repository research record, not an independent peer-review report. It records what the supplied source supports and the resulting documentation boundary.
+
+## 8. Temporal note — 2026-10-05
+
+This audit remains a historical research record of the source as reviewed on 2026-10-02. It is not a post-merge security validation. The source is HALE Version 3.0 (2026), which states that it consolidates and supersedes prior documents; its DOI is not yet assigned in the source and is not inferred here.

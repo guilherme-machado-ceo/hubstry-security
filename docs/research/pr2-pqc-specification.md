@@ -1,7 +1,22 @@
 # PR2 — PQC Integration Specification v1.2
 
-**Status:** approved specification; implementation authorized  
-**Date:** 2026-10-02  
+**Status:** approved specification; implementation completed and merged  
+**Date:** 2026-10-02 (specification) · status updated 2026-10-05
+
+> **Status update — 2026-10-05.** Implemented in PR #5, merged into `main` on 2026-10-05.
+>
+> | Aspect | State |
+> |---|---|
+> | Specification | Approved |
+> | Provider | Implemented |
+> | Tests T0–T10 | Passed |
+> | Reproduction | Independent, twice ([HSL v1 report](hsl-v1-execution-report-2026-10.md), [PR #5 report](pr5-pqc-reproduction-report-2026-10.md)) |
+> | Integration into `main` | Completed (PR #5) |
+> | Integration into the HSL handshake | Pending (F-01b) |
+> | Cryptographic validation | Not established |
+> | System TRL 4 | Not established |
+>
+> The merge of the provider is not a claim of cryptographic validation. The text below is the specification as approved.  
 **Scope:** ML-KEM-768, ML-DSA-65, SLH-DSA-SHA2-128s; liboqs adapter; crypto-agile provider; HKDF-SHA-256; canonical transcript; T0–T10 validation.
 
 ## 1. Purpose

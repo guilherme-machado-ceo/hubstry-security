@@ -9,6 +9,10 @@ The Digital Laboratory Twin is a reproducible software environment for exercisin
 
 It is an experimental harness, not a substitute for real-world or independent laboratory validation.
 
+### Protocol under test — update 2026-10-05
+
+The protocol currently intended for exercise in the Digital Laboratory Twin is **HSL Auth v1 (PSK-HMAC)** (`hsl/hsl_auth_v1.py`). The PQC provider is available on `main` but is not yet integrated into the HSL handshake (F-01b). Status of the twin is unchanged: planned.
+
 ## 2. Conceptual topology
 
 ~~~text

@@ -11,6 +11,19 @@ TRL terminology here is used as a project-planning framework; the final TRL clai
 
 ## 2. Current evidence baseline
 
+### Update — 2026-10-05
+
+Added to the baseline since the original record:
+
+- HSL Auth v1 (PSK + HMAC-SHA-256), experimental, with 32 tests and v0 regression tests;
+- real PQC provider (ML-KEM-768, ML-DSA-65, SLH-DSA-SHA2-128s) on `main` (PR #5);
+- two independent reproductions of the PQC suite against liboqs 0.16.0;
+- CI with three independent gates (syntax, general tests, PQC with required backend);
+- F-11 syntax error corrected;
+- provider hardening: explicit size-check exception, required-backend switch.
+
+### Original baseline — 2026-10-02
+
 The repository currently contains:
 
 - HALE mathematical framework and proof-of-concept material;
@@ -74,8 +87,10 @@ No claim should be upgraded from HYPOTHESIS to OBSERVED merely because implement
 ## 5. Suggested gate sequence
 
 **Gate 1 — PR2 correctness:** primitive/provider tests green.
+*Status 2026-10-05: **reached.** Evidence: 19/19 PQC tests in two independent reproductions; 192 tests passing on the integrated tree before PR #9 and 193 on the PR #9 branch (local runs); CI green on all three gates with the real liboqs backend; `compileall` passing.*
 
 **Gate 2 — protocol integration:** handshake and negative paths green.
+*Status 2026-10-05: **not reached.** Technical blocker: F-01b (ML-DSA into the HSL handshake). Requirement carried from the PR #5 review: the HSL integration must build and accept only a canonical, versioned transcript, so that `derive_session_key()` is never applied to arbitrary caller-supplied bytes.*
 
 **Gate 3 — digital twin:** scenario matrix and evidence package reproducible.
 
