@@ -5,7 +5,7 @@
 **Branch:** `fix/hsl-auth-v1` a partir da `main` em `aa242a1`.
 **Escopo:** achados F-02 a F-09 da [auditoria documental](hsl-documentation-audit-2026-10.md). F-01 e F-10 permanecem abertos.
 
-> **EN summary.** Independent reproduction of the 19 PQC tests of PR #5 (19/19 PASS against liboqs 0.16.0 built from source), implementation of HSL Auth v1 (PSK + HMAC-SHA-256), and a combined run of PR #5 with HSL v1 (192/192 PASS, including the 19 PQC tests). The earlier 19/19 result remains historical evidence from a different environment; this run is a separate reproduction. No secret material is recorded here.
+> **EN summary.** Independent reproduction of the 19 PQC tests of PR #5 (19/19 PASS against liboqs 0.16.0 built from source), implementation of HSL Auth v1 (PSK + HMAC-SHA-256), and a combined local run of PR #5 with HSL v1 (192 tests executed across four different suites, all passing). The PQC provider is reproduced but not integrated into `main`; HSL v1 is not post-quantum. The earlier 19/19 result remains historical evidence from a different environment; this run is a separate reproduction. No secret material is recorded here.
 
 ---
 
@@ -55,16 +55,18 @@ Os testes de regressão da v0 **passam quando a fragilidade conhecida é reprodu
 
 ### 3.2 Correspondência com os achados
 
+"Corrigido na v1" significa corrigido na implementação experimental HSL Auth v1, com testes. Não há revisão criptográfica externa nem prova formal.
+
 | Achado | Teste(s) na v1 | Resultado |
 |---|---|---|
-| F-02 HMAC declarado, não usado | `test_f02_response_tag_is_hmac_over_transcript` | Corrigido |
-| F-03 aceitação dependente só de f0 | `test_f03_attacker_knowing_f0_but_not_key_is_rejected`, `test_f03_attacker_cannot_complete_as_initiator_without_key`, `test_wrong_context_f0_is_rejected` | Corrigido |
-| F-04 fase do par não conferida | `test_f04_inconsistent_phase_slot_is_rejected`, `test_f04_peer_registry_is_enforced` | Corrigido (verificação de contexto, não de autenticação) |
-| F-05 etapa 3 não verificada | `test_f05_tampered_verify_is_rejected`, `test_f03_attacker_cannot_complete_as_initiator_without_key` | Corrigido |
-| F-06 mensagens sem delimitação | `test_f06_roundtrip_preserves_all_fields`, `test_f06_truncated_and_trailing_bytes_are_rejected`, `test_f06_wrong_message_type_is_rejected` | Corrigido |
-| F-07 flag de autenticação na mensagem | `test_f07_no_authentication_flag_on_the_wire` | Corrigido |
-| F-08 sem registro de nonces | `test_f08_replayed_challenge_is_rejected`, `test_f08_replayed_verify_is_rejected`, `test_replayed_response_is_rejected`, `test_stale_challenge_is_rejected`, `test_expired_pending_challenge_is_rejected` | Corrigido, com a limitação da seção 4 |
-| F-09 sem testes do HSL | As duas suítes acima | Corrigido |
+| F-02 HMAC declarado, não usado | `test_f02_response_tag_is_hmac_over_transcript` | Corrigido na v1 |
+| F-03 aceitação dependente só de f0 | `test_f03_attacker_knowing_f0_but_not_key_is_rejected`, `test_f03_attacker_cannot_complete_as_initiator_without_key`, `test_wrong_context_f0_is_rejected` | Corrigido na v1 |
+| F-04 fase do par não conferida | `test_f04_inconsistent_phase_slot_is_rejected`, `test_f04_peer_registry_is_enforced` | Corrigido na v1 (verificação de contexto, não de autenticação) |
+| F-05 etapa 3 não verificada | `test_f05_tampered_verify_is_rejected`, `test_f03_attacker_cannot_complete_as_initiator_without_key` | Corrigido na v1 |
+| F-06 mensagens sem delimitação | `test_f06_roundtrip_preserves_all_fields`, `test_f06_truncated_and_trailing_bytes_are_rejected`, `test_f06_wrong_message_type_is_rejected` | Corrigido na v1 |
+| F-07 flag de autenticação na mensagem | `test_f07_no_authentication_flag_on_the_wire` | Corrigido na v1 |
+| F-08 sem registro de nonces | `test_f08_replayed_challenge_is_rejected`, `test_f08_replayed_verify_is_rejected`, `test_replayed_response_is_rejected`, `test_stale_challenge_is_rejected`, `test_expired_pending_challenge_is_rejected` | Corrigido na v1, com a limitação da seção 4 |
+| F-09 sem testes do HSL | As duas suítes acima | Corrigido na v1 |
 
 Também cobertos: reflexão da própria mensagem, resposta de par inesperado, uso de uma tag de uma direção na outra, adulteração de campos, PSK curta e ausência de segredos no `repr`.
 
@@ -114,9 +116,19 @@ O tamanho depende do comprimento dos identificadores. Esta é uma medição da i
 |---|---|
 | Base | `feat/pr2-pqc-provider` (`b0a738b`) com merge local de `fix/hsl-auth-v1` (`e8f15f5`); não enviado ao repositório |
 | Comando | `pytest tests/ -v` |
-| Resultado | **192 passed** (19 PQC + 5 regressão v0 + 32 HSL v1 + 136 da trilha quântica) |
+| Resultado | **192 testes executados, 192 aprovados**, na árvore local combinada. São suítes de naturezas diferentes: 19 PQC + 5 regressão v0 + 32 HSL v1 + 136 testes existentes da trilha quântica. O número não representa uma métrica única do projeto. |
 
 O HSL v1 não altera nenhum arquivo do PR #5; os dois conjuntos de mudanças não se sobrepõem.
+
+**Distinções que este relatório preserva:**
+
+| Afirmação | Situação |
+|---|---|
+| Provedor PQC do PR #5 reproduzido independentemente (19/19) | Sim |
+| PQC integrado à `main` | Não: o PR #5 continua em rascunho |
+| HSL v1 com propriedades pós-quânticas | Não: a v1 não usa algoritmos pós-quânticos |
+| HSL seguro em sentido geral | Não demonstrado: sem revisão externa |
+| F-03 corrigido na v1 | Sim, com teste de regressão |
 
 ---
 

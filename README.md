@@ -57,8 +57,9 @@ pesquisa. Registro experimental completo:
 **HSL Auth v1 (PSK-HMAC)**, em [`hsl/hsl_auth_v1.py`](hsl/hsl_auth_v1.py), é a versão
 experimental corrigida do handshake. A autenticação se apoia em chave
 pré-compartilhada (PSK) e HMAC-SHA-256; f0 e as fases harmônicas são
-contexto do protocolo, não segredo. Resolve os achados F-02 a F-09 da
-auditoria, com 32 testes. Não usa assinatura pós-quântica (F-01, dependente
+contexto do protocolo, não segredo. Corrige, nesta implementação
+experimental, os achados F-02 a F-09 da auditoria, com 32 testes; não há
+revisão criptográfica externa. Não usa assinatura pós-quântica (F-01, dependente
 do PR #5). A simulação v0, em [`hsl/hsl_module.py`](hsl/hsl_module.py),
 permanece como registro histórico. Relatório de execução:
 [`docs/research/hsl-v1-execution-report-2026-10.md`](docs/research/hsl-v1-execution-report-2026-10.md).
