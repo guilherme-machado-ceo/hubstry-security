@@ -32,8 +32,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "post-quantum"))
 
 import pqc_provider as pqc  # noqa: E402
 
+# Backend policy: without liboqs the suite is skipped locally. When
+# HUBSTRY_REQUIRE_PQC=1 (set in CI), a missing backend is a failure, so a
+# skipped suite can never be read as a passing one.
+_BACKEND_AVAILABLE = pqc._backend.backend_available()
+if not _BACKEND_AVAILABLE and os.environ.get("HUBSTRY_REQUIRE_PQC") == "1":
+    raise RuntimeError(
+        "HUBSTRY_REQUIRE_PQC=1 but the liboqs backend is unavailable; "
+        "the PQC suite must not be skipped in this environment"
+    )
+
 pytestmark = pytest.mark.skipif(
-    not pqc._backend.backend_available(),
+    not _BACKEND_AVAILABLE,
     reason="liboqs backend unavailable in this environment",
 )
 
@@ -316,3 +326,17 @@ def test_t10_info_encoding_injective():
                     seen[blob] = key
     # the classic ambiguity case must NOT collide
     assert pqc.encode_info("ab", "c") != pqc.encode_info("a", "bc")
+
+
+# --- Hardening (PR #5 review, item 2): explicit size-check exception --------
+def test_size_mismatch_raises_explicit_exception(provider):
+    """_assert_sizes raises BackendSizeMismatchError (not AssertionError)."""
+    import dataclasses
+    wrong = dict(provider.kem_entry.sizes, public_key=1)
+    original = provider.kem_entry
+    try:
+        provider.kem_entry = dataclasses.replace(original, sizes=wrong)
+        with pytest.raises(pqc.BackendSizeMismatchError, match="KEM public_key"):
+            provider._assert_sizes()
+    finally:
+        provider.kem_entry = original
