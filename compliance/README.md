@@ -100,7 +100,6 @@ T+24h:    Post-mortem -> relatório de lições aprendidas
 
 | Edital / Call | Órgão | Status |
 |---------------|-------|--------|
-| CISSA Chamada de Cibersegurança 2025 | CISSA/EMBRAPII/CESAR | Submetido |
 | MCTI Chamada CNPq PQ | MCTI/CNPq | Planejado |
 | FAPESP PIPE | FAPESP | Planejado |
 | BNDES Funtec | BNDES | Planejado |
