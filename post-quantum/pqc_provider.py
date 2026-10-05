@@ -112,6 +112,21 @@ class AlgorithmBlockedError(ValueError):
     """Raised when a watchlist or unknown algorithm is requested."""
 
 
+class BackendSizeMismatchError(RuntimeError):
+    """Raised when backend output sizes differ from the registered FIPS sizes.
+
+    Explicit exception instead of ``assert`` so the check also runs under
+    ``python -O`` (where assert statements are removed).
+    """
+
+
+def _check_size(label: str, actual: int, expected: int) -> None:
+    if actual != expected:
+        raise BackendSizeMismatchError(
+            f"{label}: backend returned {actual} bytes, registry expects {expected}"
+        )
+
+
 def validate_algorithm(identifier: str, expected_type: Optional[AlgType] = None
                        ) -> AlgorithmEntry:
     """Registry validation (T6). Watchlist algorithms are hard-blocked."""
@@ -269,16 +284,16 @@ class PQCProvider:
         pk, sk = self._kem.generate_keypair()
         ct, ss = self._kem.encapsulate(pk)
         exp = self.kem_entry.sizes
-        assert len(pk) == exp["public_key"], "KEM pk size"
-        assert len(sk) == exp["secret_key"], "KEM sk size"
-        assert len(ct) == exp["ciphertext"], "KEM ct size"
-        assert len(ss) == exp["shared_secret"], "KEM ss size"
+        _check_size("KEM public_key", len(pk), exp["public_key"])
+        _check_size("KEM secret_key", len(sk), exp["secret_key"])
+        _check_size("KEM ciphertext", len(ct), exp["ciphertext"])
+        _check_size("KEM shared_secret", len(ss), exp["shared_secret"])
         spk, ssk = self._sig.generate_keypair()
         sgn = self._sig.sign(b"size-probe", ssk)
         sexp = self.sig_entry.sizes
-        assert len(spk) == sexp["public_key"], "SIG pk size"
-        assert len(ssk) == sexp["secret_key"], "SIG sk size"
-        assert len(sgn) == sexp["signature"], "SIG sig size"
+        _check_size("SIG public_key", len(spk), sexp["public_key"])
+        _check_size("SIG secret_key", len(ssk), sexp["secret_key"])
+        _check_size("SIG signature", len(sgn), sexp["signature"])
 
     # --- key lifecycle -------------------------------------------------
     def generate_kem_keypair(self) -> Keypair:

@@ -352,12 +352,12 @@ def simulate_rho3_bound() -> None:
             QuantumState.uniform_superposition(3, "|+++>"),
         ),
         (
-            QuantumState.random_state(8, seed=42, "|psi_r1>"),
-            QuantumState.random_state(8, seed=42, "|psi_r1>"),
+            QuantumState.random_state(8, seed=42, label="|psi_r1>"),
+            QuantumState.random_state(8, seed=42, label="|psi_r1>"),
         ),
         (
-            QuantumState.random_state(8, seed=42, "|psi_a>"),
-            QuantumState.random_state(8, seed=99, "|psi_b>"),
+            QuantumState.random_state(8, seed=42, label="|psi_a>"),
+            QuantumState.random_state(8, seed=99, label="|psi_b>"),
         ),
     ]
 

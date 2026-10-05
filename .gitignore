@@ -29,3 +29,5 @@ venv/
 # Build
 *.log
 *.tmp
+# CI build artefacts
+.oqs-install/
