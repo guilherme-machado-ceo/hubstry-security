@@ -59,8 +59,8 @@ experimental corrigida do handshake. A autenticação se apoia em chave
 pré-compartilhada (PSK) e HMAC-SHA-256; f0 e as fases harmônicas são
 contexto do protocolo, não segredo. Corrige, nesta implementação
 experimental, os achados F-02 a F-09 da auditoria, com 32 testes; não há
-revisão criptográfica externa. Não usa assinatura pós-quântica (F-01, dependente
-do PR #5). A simulação v0, em [`hsl/hsl_module.py`](hsl/hsl_module.py),
+revisão criptográfica externa. Não usa assinatura pós-quântica: a integração
+de ML-DSA ao handshake (F-01b) está pendente. A simulação v0, em [`hsl/hsl_module.py`](hsl/hsl_module.py),
 permanece como registro histórico. Relatório de execução:
 [`docs/research/hsl-v1-execution-report-2026-10.md`](docs/research/hsl-v1-execution-report-2026-10.md).
 
@@ -70,10 +70,29 @@ adequação validada a qualquer ambiente de aplicação. Auditoria documental
 completa e achados de implementação:
 [`docs/research/hsl-documentation-audit-2026-10.md`](docs/research/hsl-documentation-audit-2026-10.md).
 
-**PQC (NIST FIPS 203/204/205)** · Status: **experimental, em revisão**
+**PQC (NIST FIPS 203/204/205)** · Status: **provedor experimental na `main`**
 
-O provedor real de criptografia pós-quântica está no PR #5 (rascunho) e
-ainda não foi integrado à `main`.
+O provedor de criptografia pós-quântica (ML-KEM-768, ML-DSA-65,
+SLH-DSA-SHA2-128s, via liboqs) entrou na `main` com o merge do PR #5 em
+2026-10-05. Os 19 testes da suíte PQC foram reproduzidos de forma
+independente. O provedor ainda não é usado por nenhum fluxo da plataforma,
+incluindo o handshake HSL. Não é uma implementação criptograficamente
+validada. Ver [`post-quantum/README.md`](post-quantum/README.md).
+
+**Estado atual (2026-10-05)**
+
+| Componente | Estado |
+|---|---|
+| HSL v0 | Registro histórico |
+| HSL Auth v1 (PSK-HMAC) | Experimental, implementado e testado |
+| ML-KEM-768, ML-DSA-65, SLH-DSA-SHA2-128s | Provedor experimental na `main`; 19 testes reproduzidos |
+| ML-DSA no handshake HSL | Pendente (F-01b) |
+| CI (integração contínua) | Pendente (F-10) |
+| `post-quantum/rho3_bound.py` | Erro de sintaxe conhecido (F-11); módulo bloqueado |
+| Digital Laboratory Twin | Planejado |
+| Validação adversarial integrada | Pendente |
+| TRL 4 | Não estabelecido |
+| QPU / CUDA-Q / cuPQC | Trilha de pesquisa separada do gate de segurança |
 
 ---
 
@@ -140,7 +159,7 @@ flowchart TD
 
 | Módulo | Descrição / Description |
 |--------|------------------------|
-| [`post-quantum/`](post-quantum/) | Pesquisa pós-quântica; provedor NIST PQC (ML-KEM, ML-DSA, SLH-DSA) em revisão no PR #5 |
+| [`post-quantum/`](post-quantum/) | Provedor experimental NIST PQC (ML-KEM, ML-DSA, SLH-DSA) via liboqs; pesquisa pós-quântica |
 | [`hsl/`](hsl/) | Harmonic Security Layer — autenticação baseada em coerência harmônica |
 | [`quantum/`](quantum/) | Trilha de pesquisa quântica (encodings de fase, lattice de 64 perfis) |
 | [`attack-vectors/`](attack-vectors/) | Catálogo de 14+ vetores de ataque mapeados contra ENISA 2025 e OWASP 2025 |
@@ -156,7 +175,7 @@ flowchart TD
 
 - Git 2.40+
 - Python 3.10+ (para exemplos de referência)
-- liboqs: não necessário para a `main`; necessário para executar o provedor PQC do PR #5, caso integrado
+- liboqs 0.16.0 + liboqs-python 0.16.0: necessários para usar o provedor PQC e executar `tests/pqc`. Sem eles, a suíte PQC é pulada (*skip*), o que não equivale a aprovação
 
 ### Clonar / Clone
 

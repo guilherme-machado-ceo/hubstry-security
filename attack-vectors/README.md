@@ -10,7 +10,7 @@ Este catálogo classifica ameaças com base no **ENISA Threat Landscape 2025** e
 
 This catalog classifies threats based on **ENISA Threat Landscape 2025** and **OWASP Top 10 2025**, mapping each vector against Hubstry Security Platform defense modules.
 
-> **"Mitigado no design" significa mitigação prevista no desenho, não implementada nem validada.** Mitigações que dependem de PQC aguardam a integração do provedor do PR #5; mitigações que dependem do HSL dependem de propriedades ainda não demonstradas. Ver [`docs/research/hsl-documentation-audit-2026-10.md`](../docs/research/hsl-documentation-audit-2026-10.md).
+> **"Mitigado no design" significa mitigação prevista no desenho, não implementada nem validada.** O provedor PQC está na `main` desde o PR #5, mas não é usado por nenhum fluxo da plataforma; as mitigações que dependem dele continuam previstas, não implementadas; mitigações que dependem do HSL dependem de propriedades ainda não demonstradas. Ver [`docs/research/hsl-documentation-audit-2026-10.md`](../docs/research/hsl-documentation-audit-2026-10.md).
 >
 > **"Mitigated in design" means mitigation planned in the design, neither implemented nor validated.**
 
@@ -25,10 +25,10 @@ This catalog classifies threats based on **ENISA Threat Landscape 2025** and **O
 | **Tipo** | Criptográfico / Cryptographic |
 | **Fonte** | Shor''s Algorithm (1994), NIST PQC Migration Guide |
 | **Impacto** | Crítico — quebra RSA/ECC |
-| **Mitigação Hubstry** | ML-KEM-768 (FIPS 203) + ML-DSA-65 (FIPS 204) — provedor em revisão no PR #5 |
+| **Mitigação Hubstry** | ML-KEM-768 (FIPS 203) + ML-DSA-65 (FIPS 204) — provedor experimental na `main`; não usado por fluxos da plataforma |
 | **Status** | Mitigado no design |
 
-Computadores quânticos suficientemente poderosos podem resolver o problema do logaritmo discreto em tempo polinomial, comprometendo RSA e ECC. A Hubstry Security Platform foi projetada para utilizar algoritmos pós-quânticos padronizados (baseados em lattice e hash), que permanecem seguros contra ataques quânticos conhecidos. A integração desses algoritmos está em revisão (PR #5).
+Computadores quânticos suficientemente poderosos podem resolver o problema do logaritmo discreto em tempo polinomial, comprometendo RSA e ECC. A Hubstry Security Platform foi projetada para utilizar algoritmos pós-quânticos padronizados (baseados em lattice e hash), que permanecem seguros contra ataques quânticos conhecidos. O provedor desses algoritmos está na `main` desde o PR #5, mas ainda não é usado por nenhum fluxo da plataforma.
 
 ---
 

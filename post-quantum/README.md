@@ -12,9 +12,9 @@ This module contains an experimental provider of **NIST Post-Quantum Cryptograph
 
 ---
 
-## PR2 — Real PQC Provider (specification v1.2) · Status: implemented, under review
+## PR2 — Real PQC Provider (specification v1.2) · Status: implemented, merged into `main` (2026-10-05)
 
-**[IMPLEMENTED — under Luna/PI review]** New files:
+**[IMPLEMENTED — reviewed by Luna (approve, no blockers) and merged by the PI via PR #5]** Files:
 
 | File | Purpose |
 |------|---------|
@@ -25,13 +25,15 @@ This module contains an experimental provider of **NIST Post-Quantum Cryptograph
 
 **Active algorithms (PR2 scope — exactly three).** "Standardized" is a property of the NIST standard; "implemented", "exercised by tests" and "integrated" are properties of this project.
 
-| Algoritmo / Algorithm | Padrão / Standard | Status no PR #5 / Status in PR #5 | Exercitado por / Exercised by | Não coberto / Not covered |
+| Algoritmo / Algorithm | Padrão / Standard | Status no projeto / Status in project | Exercitado por / Exercised by | Não coberto / Not covered |
 |---|---|---|---|---|
-| ML-KEM-768 | FIPS 203 (externo / external) | Implementado e exercitado / implemented and exercised | T0, T1, T4, T5, T7, T10 | — |
-| ML-DSA-65 | FIPS 204 (externo / external) | Implementado e exercitado / implemented and exercised | T0, T2, T3, T4, T5, T7 | — |
-| SLH-DSA-SHA2-128s | FIPS 205 (externo / external) | Implementado e exercitado / implemented and exercised | T0 (disponibilidade / availability), T2 (roundtrip), T7 (roundtrip + assinatura adulterada / tampered signature) | Tamanhos (T5), negativos de mensagem e chave trocada (T3), nível de protocolo (T4) / sizes, wrong-message and wrong-key negatives, protocol level |
+| ML-KEM-768 | FIPS 203 (externo / external) | Implementado, exercitado, na `main` / implemented, exercised, on `main` | T0, T1, T4, T5, T7, T10 | — |
+| ML-DSA-65 | FIPS 204 (externo / external) | Implementado, exercitado, na `main` / implemented, exercised, on `main` | T0, T2, T3, T4, T5, T7 | — |
+| SLH-DSA-SHA2-128s | FIPS 205 (externo / external) | Implementado, exercitado, na `main` / implemented, exercised, on `main` | T0 (disponibilidade / availability), T2 (roundtrip), T7 (roundtrip + assinatura adulterada / tampered signature) | Tamanhos (T5), negativos de mensagem e chave trocada (T3), nível de protocolo (T4) / sizes, wrong-message and wrong-key negatives, protocol level |
 
-Integração / Integration: nenhum dos três está integrado à `main` antes do merge deste PR, nem ao handshake HSL (finding F-01). / None of the three is integrated into `main` before this PR is merged, nor into the HSL handshake.
+Integração / Integration: os três estão na `main` desde o merge do PR #5 (2026-10-05); nenhum é usado por fluxos da plataforma, e nenhum está integrado ao handshake HSL (finding F-01b). / All three are on `main` since PR #5 was merged (2026-10-05); none is used by platform flows, and none is integrated into the HSL handshake (finding F-01b).
+
+**Open items from the PR #5 review (non-blocking):** (1) in CI, an unavailable liboqs backend must fail the PQC suite instead of skipping it; (2) `_assert_sizes()` should raise explicit exceptions instead of using `assert`; (3) the future HSL integration must apply `derive_session_key()` only to a canonical, versioned transcript, never to arbitrary caller-supplied bytes.
 
 ML-KEM-512/1024 are valid FIPS 203 parameter sets but are **out of PR2 scope** (re-adding requires explicit test-matrix coverage or a new specification cycle). FN-DSA: watchlist, **blocked**. HQC: NIST-selected (not yet standardized), watchlist.
 

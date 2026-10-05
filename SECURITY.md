@@ -41,9 +41,9 @@ Hubstry takes security seriously. If you identify a vulnerability, report it res
 
 | Padrão / Standard | Status |
 |-------------------|--------|
-| NIST FIPS 203 (ML-KEM / Kyber) | Integração em revisão (PR #5, rascunho) |
-| NIST FIPS 204 (ML-DSA / Dilithium) | Integração em revisão (PR #5, rascunho); previsão original Q3 2026 |
-| NIST FIPS 205 (SLH-DSA / SPHINCS+) | Integração em revisão (PR #5, rascunho); previsão original Q4 2026 |
+| NIST FIPS 203 (ML-KEM / Kyber) | Provedor experimental na `main` (PR #5, 2026-10-05); não usado por fluxos da plataforma |
+| NIST FIPS 204 (ML-DSA / Dilithium) | Provedor experimental na `main` (PR #5, 2026-10-05); integração ao HSL pendente (F-01b) |
+| NIST FIPS 205 (SLH-DSA / SPHINCS+) | Provedor experimental na `main` (PR #5, 2026-10-05); não usado por fluxos da plataforma |
 | TLS 1.3 + PQC Hybrid | Pesquisa |
 
 Consulte [`post-quantum/`](post-quantum/) para a pesquisa pós-quântica. A integração HALE + PQC é objetivo de pesquisa e não está implementada.
