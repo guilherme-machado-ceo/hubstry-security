@@ -81,11 +81,11 @@ A assinatura da etapa 3 é um placeholder (`SHA-512` truncado em 64 B), não ML-
 | **Round Trips** | 1.5 RTT | 1 RTT (w/ 0-RTT) |
 | **Quantum Resistance** | Planejada (ML-DSA-65); não implementada | Not native (hybrid extension) |
 | **Key Exchange** | Harmonic coherence (sem troca de chaves implementada) | ECDH (X25519) |
-| **Certificate Size** | 0 bytes (segredo pré-compartilhado f0) | ~2-4 KB (X.509) |
+| **Certificate Size** | Não aplicável ao formato experimental atual | ~2-4 KB (X.509) |
 | **CPU (handshake)** | Não medido | Não medido |
 | **Memory footprint** | Não medido | Não medido |
 
-> **Diferença de categoria.** O HSL pressupõe um segredo pré-compartilhado (f0) entre as partes. O TLS 1.3 autentica partes sem segredo prévio, com certificados. As duas construções resolvem problemas diferentes e a comparação direta de tamanho não é equivalente.
+> **Diferença de categoria.** O modelo pretendido do HSL é uma configuração ou segredo pré-compartilhado entre as partes; esse modelo ainda não está implementado e não foi validado criptograficamente (ver achado F-03 da auditoria). O TLS 1.3 autentica partes sem segredo prévio, com certificados. As duas construções resolvem problemas diferentes e a comparação direta de tamanho não é equivalente.
 
 > **Nota / Note:** TLS 1.3 continua sendo o padrão para comunicação web generalista. Aplicações-alvo em investigação para o HSL: IoT, telecomunicações, sistemas embarcados e ambientes com recursos computacionais restritos.
 

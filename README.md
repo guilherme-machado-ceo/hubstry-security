@@ -149,7 +149,7 @@ flowchart TD
 
 - Git 2.40+
 - Python 3.10+ (para exemplos de referência)
-- liboqs (necessário a partir da integração do provedor PQC do PR #5)
+- liboqs: não necessário para a `main`; necessário para executar o provedor PQC do PR #5, caso integrado
 
 ### Clonar / Clone
 
@@ -178,11 +178,11 @@ def hale_key_derivation(f0, level, b):
 
 | Fase | Período | TRL | Entregáveis |
 |------|------------|-----|-------------|
-| **Fase 1** | Q2 2026 · *replanejado* | 3-4 | Validação laboratorial do HSL; benchmarks contra TLS 1.3 |
-| **Fase 2** | Q3 2026 · *replanejado* | 4-5 | Integração ML-KEM-768 + HSL; PoC em ambiente controlado |
+| **Fase 1** | A definir (original: Q2 2026) | 3-4 | Validação laboratorial do HSL; benchmarks contra TLS 1.3 |
+| **Fase 2** | A definir (original: Q3 2026) | 4-5 | Integração ML-KEM-768 + HSL; PoC em ambiente controlado |
 | **Fase 3** | Q1 2027 | 5-6 | Testes com parceiro de validação; conformidade NIS2 validada |
 
-> Datas originais mantidas como registro. As fases 1 e 2 não foram concluídas nos prazos previstos e serão replanejadas; novas datas ainda não foram definidas.
+> As fases 1 e 2 não foram concluídas nos prazos originais e serão replanejadas. As datas originais aparecem apenas como registro histórico; novas datas ainda não foram definidas.
 
 Veja o roadmap completo em [`roadmap/2026-2027.md`](roadmap/2026-2027.md).
 
