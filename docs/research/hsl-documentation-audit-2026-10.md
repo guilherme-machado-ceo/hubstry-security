@@ -84,6 +84,7 @@ O histórico do Git é público e permanente; uma afirmação desse tipo deixa r
 | C04 | 60, 68 | HALE "deriva hierarquias de chaves … oferecendo separabilidade espectral natural para … autenticação leve" | ARQ · SEG | Sem hierarquia de chaves implementada na `main`. | Não demonstrado | HALE como framework de pesquisa que originou a investigação; propriedades criptográficas em investigação. |
 | C05 | 142–152 | Exemplo "ML-KEM-768 com HALE" | IMP | Não usa ML-KEM. Calcula `fk` e o descarta; devolve `sha256(str(f0))`, idêntico para qualquer `level` e `b`. | Contradito | Rotular como ilustrativo e não funcional, ou retirar o título "ML-KEM-768". |
 | C06 | 133 | Pré-requisito "liboqs 0.10+" | IMP | A `main` não usa liboqs; o PR #5 usa 0.16.0. | Não aplicável à `main` | Manter até a integração do PR #5; anotar dependência. |
+| C37 | 19–28 | Tabela "Incrementos" cita `hsl_layer/hsl_auth.py`, `hsl_layer/intrusion_detection.py`, `hsl_layer/key_rotation.py`, `pi_radical/*.py` e `demo/hsl_demo.py` | IMP | Nenhum desses caminhos existe na `main` nem nas demais branches do repositório. Equivalentes existentes: `hsl/hsl_module.py`, `hsl/intrusion_detection.py`, `hsl/lfsr_key_rotation.py`, `quantum/lattice64.py`, `post-quantum/rho3_bound.py`. | Contradito | Corrigir caminhos para os arquivos existentes; marcar π-radical e matriz W como "não presente neste repositório". |
 | C07 | 158–164 | Roadmap: Fase 1 Q2 2026 (benchmarks contra TLS 1.3), Fase 2 Q3 2026 | ROA | Prazos vencidos sem benchmark registrado. | Meta de projeto (vencida) | Marcar como "replanejado". Novas datas a definir pelo PI. |
 
 ### 4.2 `hsl/README.md`
@@ -99,7 +100,7 @@ O histórico do Git é público e permanente; uma afirmação desse tipo deixa r
 | C14 | 49, 53 | Proteção contra replay (nonce + timestamp, 60 s); liveness | SEG | Janela de tempo verificada (`hsl_module.py:350`); não há registro de nonces já vistos (F-08). | Observado (parcial) | "Janela temporal implementada; registro de nonces pendente." |
 | C15 | 61–68 | Tabela HSL × TLS: RTT, CPU ~0,3 ms, memória ~2 KB, certificado 0 B | HIS · SEG | Sem medição. A própria seção de limitações (linha 141) já declara CPU e memória "estimados". Certificado 0 B decorre de segredo pré-compartilhado (`f0`); o TLS 1.3 autentica partes sem segredo prévio. | Não demonstrado · Categoria distinta | Marcar valores como "não medidos"; nota sobre a diferença de categoria. |
 | C16 | 70 | "Otimizado para … IoT, telecomunicações, sistemas embarcados" | HIS | Sem teste em ambiente-alvo. | Não demonstrado | "Aplicações-alvo em investigação." |
-| C17 | 76–132 | Implementação de referência em `reference-impl/hsl_handshake.py` | IMP | Arquivo inexistente. O trecho não importa `hashlib`, concatena `bytes` e `str` (erro de tipo), devolve `"authenticated": True` incondicionalmente e grava `"total_bytes": 200` como constante. | Contradito | Rotular como pseudocódigo histórico; apontar para `hsl/hsl_module.py`. |
+| C17 | 76–132 | Implementação de referência em `reference-impl/hsl_handshake.py` | IMP | Arquivo inexistente. O trecho concatena `bytes` e `str` (erro de tipo), devolve `"authenticated": True` incondicionalmente e grava `"total_bytes": 200` como constante. | Contradito | Rotular como pseudocódigo histórico; apontar para `hsl/hsl_module.py`. |
 | C18 | 139 | "Em modo híbrido (HSL + PQC), a proteção MITM é completa" | SEG | Modo híbrido inexistente na `main`. MITM (Man-in-the-Middle): ataque de intermediário. | Não demonstrado | Retirar "completa"; "objetivo do modo híbrido". |
 
 ### 4.3 `docs/architecture.md`
@@ -127,11 +128,12 @@ O histórico do Git é público e permanente; uma afirmação desse tipo deixa r
 | C27 | `attack-vectors/README.md:98, 134` | HSL "elimina necessidade de credenciais tradicionais"; "verificação de identidade independente de DNS" | SEG | Sem demonstração. | Não demonstrado | "Hipótese de mitigação". |
 | C28 | `compliance/README.md:27, 29, 49` | Mapeamentos NIS2 e NIST CSF a "PQC Module (ML-KEM-768 + AES-256-GCM)" e "HSL coherence token + ML-DSA-65" | SEG | Controles não implementados na `main`. NIS2: diretiva europeia de segurança de redes. NIST CSF: Cybersecurity Framework. | Contradito | Rotular como "controle planejado". |
 | C29 | `SECURITY.md:44–45` | ML-KEM "integração em progresso"; ML-DSA "planejado para Q3 2026" | ROA | Coerente com o PR #5 em rascunho; data de Q3 vencida. | Observado · Meta vencida | Referenciar o PR #5. |
-| C30 | `roadmap/2025-2026.md:50–52` | F0-04 a F0-06 "Done", incluindo o limite ρ₃ | ROA | ρ₃ bloqueado (ver C24). | Contradito (pelo registro do repositório) | Anotar "bloqueado em 2026-10-03". |
+| C30 | `roadmap/2025-2026.md:50` | F0-04 "Done": limite ρ₃ | ROA | ρ₃ bloqueado (ver C24). | Contradito (pelo registro do repositório) | Anotar "bloqueado em 2026-10-03". |
 | C31 | `roadmap/2025-2026.md:84–85` | "Current Target": ~200 B, ~0,3 ms P99 | HIS | Rotulado como meta. | Meta de projeto | Manter; acrescentar "não medido". |
 | C32 | `roadmap/2026-2027.md:30, 40, 43` | Benchmark HSL × TLS 1.3 (jun/2026) e paper HALE em conferência (jul/2026) | ROA | Não há relatório de benchmark no repositório. | Meta de projeto (vencida) | "Replanejado". |
 | C33 | `roadmap/2026-2027.md:104` | "Múltiplos parceiros prospectados (Claro, TIM, Vivo)", como mitigação de risco | COM | Nenhuma evidência documental de contato foi fornecida; o PI confirmou em 2026-10-05 que os nomes devem sair. | Sem evidência | Remover os três nomes. Reescrever como intenção futura, sem sugerir atividade comercial ocorrida. |
 | C36 | `roadmap/2025-2026.md:176` | Mitigação "Multiple partner pipeline" | COM | Pressupõe um funil de parceiros existente; nenhuma evidência fornecida. | Sem evidência | Reescrever como intenção futura ("prospecção de múltiplos parceiros prevista"). |
+| C38 | `roadmap/2025-2026.md:187–188` | Integração com `hubstry-hale-ecosystem` e `iot-protocol-hubstry` com status "Integrated" | ARQ | Repositórios externos; não verificado nesta rodada. | Não auditado | Avaliar em rodada própria. |
 | C34 | `post-quantum/README.md:25, 35, 49–60, 84` | Hierarquia de chaves HALE; assinatura "HALE-PQ" com ML-DSA-65; `examples/hale_mlkem.py` | ARQ · IMP | Diretório `examples/` inexistente; sem implementação na `main`. | Contradito · Não demonstrado | **Não editar neste PR.** O arquivo também é alterado pelo PR #5; a requalificação acontece na revisão do PR #5. |
 | C35 | `quantum/README.md:3–5, 99, 110` | Não reivindica segurança quântica, vantagem quântica nem nível criptográfico | — | Coerente com o código. | Observado | Manter. Modelo de redação para os demais. |
 
@@ -185,6 +187,9 @@ Requalificação documental conforme a coluna "Tratamento proposto", em 10 arqui
 
 Fora do Commit 2: `post-quantum/README.md` (PR #5), qualquer arquivo `.py`, e os achados F-01 a F-10.
 
-**Decidido pelo PI (2026-10-05):** remoção dos nomes de empresas em C33, aplicada no Commit 2.
+**Decidido pelo PI (2026-10-05) e aplicado no Commit 2:**
+- remoção dos nomes de empresas em C33; C33 reescrito como "Potenciais parceiros e ambientes de aplicação, a definir após validação técnica e comercial"; C36 como "prospecção de múltiplos parceiros prevista como etapa futura";
+- generalização de todos os marcos que pressupunham telecom para "parceiro de validação" e "piloto". IoT e telecomunicações permanecem apenas como aplicações-alvo em investigação. O roadmap descreve necessidades de validação e experimentação, não um mercado escolhido;
+- fases vencidas marcadas como "replanejado", sem novas datas.
 
-**Decisões pendentes do PI:** novas datas do roadmap (C07, C21, C32); redação de substituição em C33 e C36.
+**Pendente:** novas datas do roadmap, a definir pelo PI quando houver decisão sobre os próximos marcos técnicos e comerciais; rodada própria para C25 e C38.
