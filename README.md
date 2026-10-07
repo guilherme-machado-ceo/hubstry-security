@@ -2,254 +2,163 @@
 
 # Hubstry Security Platform
 
-**Cybersecurity platform with post-quantum cryptography and harmonic authentication**
+**Post-quantum readiness, built on evidence**
 
-*Plataforma de cibersegurança com criptografia pós-quântica e autenticação harmônica*
+*Prontidão pós-quântica, construída sobre evidência*
 
-[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-lightgrey.svg)](LICENSE)
-[![PQC experimental](https://img.shields.io/badge/PQC-experimental-yellow)](post-quantum/README.md)
-[![TRL 3](https://img.shields.io/badge/TRL-3-orange)](docs/architecture.md)
+[![CI](https://github.com/guilherme-machado-ceo/hubstry-security/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/guilherme-machado-ceo/hubstry-security/actions/workflows/ci.yml)
+[![NIST PQC](https://img.shields.io/badge/NIST-FIPS%20203%2F204%2F205-informational)](post-quantum/README.md)
 [![Security](https://img.shields.io/badge/Security-Policy-blue)](SECURITY.md)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-lightgrey.svg)](LICENSE)
 
 </div>
 
 ---
-## Incrementos / Latest Implementations
 
-| Módulo | Arquivo | Descrição | Status |
-|--------|---------|-----------|--------|
-| **HSL Auth v1** | [`hsl/hsl_auth_v1.py`](hsl/hsl_auth_v1.py) | Handshake de 3 mensagens com PSK + HMAC-SHA-256 e MACs direcionais | Experimental |
-| **HSL Auth v0** | [`hsl/hsl_module.py`](hsl/hsl_module.py) | Simulação histórica H-Challenge/Response (meta histórica ~200 B, não validada) | Registro histórico; ver auditoria F-03 |
-| **Detecção de Intrusão** | [`hsl/intrusion_detection.py`](hsl/intrusion_detection.py) | Desvio de fase Δφ > ε | Protótipo |
-| **Rotação LFSR** | [`hsl/lfsr_key_rotation.py`](hsl/lfsr_key_rotation.py) | Rotação de chaves via LFSR | Protótipo |
-| **π-Radical Operator** | — | Operador π-radical — 6 relações ρ₁-ρ₆ | Não presente neste repositório |
-| **Lattice 64 Perfis** | [`quantum/lattice64.py`](quantum/lattice64.py), [`post-quantum/profile_lattice.py`](post-quantum/profile_lattice.py) | Lattice de 64 perfis harmônicos | Ver Current Research Status |
-| **W Matrix Fixed-Point** | — | Matriz W — ponto fixo espectral | Não presente neste repositório |
-| **Bound ρ₃ Quântico** | [`post-quantum/rho3_bound.py`](post-quantum/rho3_bound.py) | Limite quântico ρ₃ | Bloqueado (auditoria 2026-10-03) |
-| **HSL Demo** | `python3 hsl/hsl_module.py` | Demonstração da simulação HSL | Simulação |
+## The problem
 
-> Caminhos corrigidos em 2026-10-05: a versão anterior desta tabela citava `hsl_layer/`, `pi_radical/` e `demo/`, que não existem neste repositório. Ver [`docs/research/hsl-documentation-audit-2026-10.md`](docs/research/hsl-documentation-audit-2026-10.md).
+The transition to post-quantum cryptography (PQC, cryptography designed to resist attacks by future quantum computers) is an engineering migration problem as much as a cryptographic one. Systems that protect long-lived data today may face a future in which cryptographically relevant quantum computing changes the threat model: data intercepted now could be decrypted later ("harvest now, decrypt later").
 
----
+For constrained systems, such as IoT (Internet of Things) devices and resource-limited networks, the challenge is broader. Authentication, key establishment, protocol framing, implementation correctness and reproducibility all have to work together, and each step has to be backed by evidence before it becomes a claim.
 
-## Current Research Status
+## Origin: HALE
 
-**PR1 — Quantum Encoding & 64-Profile Lattice** · Status: **merged** (PR #2, 2026-10-03)
+The platform originates in **HALE** (Harmonic Addressing & Labeling Equation), the mathematical framework developed by Hubstry Deep Tech since 2023. HALE studies rational harmonic subdivisions of a fundamental frequency *f0* and their use in addressing, network segmentation, context and security.
 
-Validated (OBSERVED/DERIVED, 3 ambientes independentes):
+From HALE came the **HSL** (Harmonic Security Layer) research line: an authentication protocol in which harmonic phases bind each exchange to its context, while the security itself rests on standard, keyed cryptography. In HSL Auth v1, *f0* and the harmonic phases are protocol context, not secrets.
 
-- Comparação de encodings de fase harmônica (atual vs equatorial), n = 4…256;
-- Encoding equatorial = phase encoding padrão da literatura; fidelidade
-  `F = cos²(Δθ/2)`, uniforme em k (provado simbolicamente e numericamente);
-- 64 perfis como encoding computacional em base de 6 qubits + projetor P_C;
-- 136 casos pytest; 520 combinações (k,n) verificadas contra o baseline.
+## What already works
 
-**Não reivindicado:** segurança quântica, vantagem quântica, nível
-criptográfico. `post-quantum/rho3_bound.py`: auditado (Fases 1–2,
-2026-10-03) — experimentalmente inválido e cientificamente bloqueado até
-definição formal de f_ρ₃; não citar resultados do módulo. O bloqueio é da
-implementação e da quantidade f_ρ₃; o conceito ρ₃ permanece objeto de
-pesquisa. Registro experimental completo:
-[`docs/research/pr1-quantum-encoding.md`](docs/research/pr1-quantum-encoding.md).
-
-**HSL — Harmonic Security Layer** · Status: **hipótese de pesquisa**
-
-**HSL Auth v1 (PSK-HMAC)**, em [`hsl/hsl_auth_v1.py`](hsl/hsl_auth_v1.py), é a versão
-experimental corrigida do handshake. A autenticação se apoia em chave
-pré-compartilhada (PSK) e HMAC-SHA-256; f0 e as fases harmônicas são
-contexto do protocolo, não segredo. Corrige, nesta implementação
-experimental, os achados F-02 a F-09 da auditoria, com 32 testes; não há
-revisão criptográfica externa. Não usa assinatura pós-quântica: a integração
-de ML-DSA ao handshake (F-01b) está pendente. A simulação v0, em [`hsl/hsl_module.py`](hsl/hsl_module.py),
-permanece como registro histórico. Relatório de execução:
-[`docs/research/hsl-v1-execution-report-2026-10.md`](docs/research/hsl-v1-execution-report-2026-10.md).
-
-**Não reivindicado:** tamanho de handshake validado, equivalência de
-segurança com TLS 1.3, resistência quântica, autenticação mútua,
-adequação validada a qualquer ambiente de aplicação. Auditoria documental
-completa e achados de implementação:
-[`docs/research/hsl-documentation-audit-2026-10.md`](docs/research/hsl-documentation-audit-2026-10.md).
-
-**PQC (NIST FIPS 203/204/205)** · Status: **provedor experimental na `main`**
-
-O provedor de criptografia pós-quântica (ML-KEM-768, ML-DSA-65,
-SLH-DSA-SHA2-128s, via liboqs) entrou na `main` com o merge do PR #5 em
-2026-10-05. Os 19 testes da suíte PQC foram reproduzidos de forma
-independente. O provedor ainda não é usado por nenhum fluxo da plataforma,
-incluindo o handshake HSL. Não é uma implementação criptograficamente
-validada. Ver [`post-quantum/README.md`](post-quantum/README.md).
-
-**Estado atual (2026-10-05)**
-
-| Componente | Estado |
+| Verified project result | Evidence |
 |---|---|
-| HSL v0 | Registro histórico |
-| HSL Auth v1 (PSK-HMAC) | Experimental, implementado e testado |
-| ML-KEM-768, ML-DSA-65, SLH-DSA-SHA2-128s | Provedor experimental na `main`; 19 testes reproduzidos |
-| ML-DSA no handshake HSL | Pendente (F-01b) |
-| CI (integração contínua) | GitHub Actions com três gates independentes: sintaxe, testes gerais e PQC com backend obrigatório ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) |
-| `post-quantum/rho3_bound.py` | Erro de sintaxe corrigido (F-11); módulo continua bloqueado e seus resultados não devem ser citados |
-| Digital Laboratory Twin | Planejado |
-| Validação adversarial integrada | Pendente |
-| TRL 4 | Não estabelecido |
-| QPU / CUDA-Q / cuPQC | Trilha de pesquisa separada do gate de segurança |
+| Experimental provider for the three NIST (National Institute of Standards and Technology) post-quantum standards: ML-KEM-768 (key establishment, FIPS 203), ML-DSA-65 (signatures, FIPS 204) and SLH-DSA-SHA2-128s (hash-based signatures, FIPS 205), on the open-source liboqs 0.16.0 library, with 19 tests independently reproduced | [PQC reproduction report](docs/research/pr5-pqc-reproduction-report-2026-10.md) |
+| HSL Auth v1, an experimental three-message handshake using a PSK (pre-shared key) and HMAC-SHA-256 (keyed message authentication), with 32 tests; mutation testing detected 5 of 5 deliberately introduced defects | [HSL v1 execution report](docs/research/hsl-v1-execution-report-2026-10.md) |
+| Quantum-research track (harmonic phase encodings and a 64-profile lattice on 6 qubits), with 136 tests reproduced across three independent environments | [PR1 research record](docs/research/pr1-quantum-encoding.md) |
+| Catalog of 14 attack vectors mapped against ENISA (European Union Agency for Cybersecurity) 2025 and OWASP (Open Worldwide Application Security Project) 2025 | [attack-vectors/](attack-vectors/) |
+| Regulatory mapping for NIS2 (EU network and information security directive), LGPD (Brazil's General Data Protection Law), NIST CSF 2.0 (Cybersecurity Framework) and ISO/IEC 27001, with an incident-response playbook | [compliance/](compliance/) |
 
----
+Component-level results are tracked separately from protocol integration and laboratory validation; see [Maturity and limitations](#maturity-and-limitations).
 
-## [PT-BR] Sobre | [EN] About
+## Evidence-oriented engineering
 
-### Sobre
+The repository applies an explicit evidence discipline:
 
-A **Hubstry Security Platform** é uma framework de cibersegurança de propósito geral que integra quatro pilares fundamentais: **Criptografia Pós-Quântica** (NIST FIPS 203/204/205), **Autenticação Harmônica** (HSL — Harmonic Security Layer), **Análise de Vetores de Ataque** (ENISA 2025 + OWASP 2025) e **Conformidade Regulatória** (NIS2, LGPD, NIST CSF 2.0, ISO 27001).
+- **Independent reproduction:** no experimental result produced by a single agent is promoted to baseline evidence without independent reproduction, where technically feasible.
+- **Required CI gates:** three CI (continuous integration) checks — syntax, general tests, and PQC tests with the liboqs backend required — must pass before any change enters `main`. This is enforced by the repository's branch ruleset.
+- **Status separation:** implementation status, research hypothesis, measured result and validation maturity are documented separately, with a documentation audit that classifies each claim.
+- **Human approval:** every merge requires explicit approval by the principal investigator.
 
-Desenvolvida pela **Hubstry Deep Tech** (fundada em 2023), a plataforma tem origem no framework matemático **HALE** (Harmonic Addressing & Labeling Equation), que originou a investigação sobre subdivisões harmônicas racionais de uma frequência fundamental f0 e seu possível uso em endereçamento, segmentação de redes, contexto e segurança. As propriedades criptográficas dessa abordagem ainda são objeto de investigação experimental.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the evidence rule and the CI gate definitions.
 
-O módulo **HSL** investiga a hipótese de uma autenticação mais compacta que os mecanismos convencionais. O projeto explorou uma meta de aproximadamente 200 bytes por handshake; esse valor não foi validado experimentalmente. A implementação atual utiliza uma assinatura simulada como placeholder; a integração de uma assinatura ML-DSA-65 implicará requisitos de tamanho de mensagem significativamente diferentes, a serem medidos no protocolo efetivamente definido. Tamanho efetivo, custo computacional e propriedades de segurança ainda precisam ser medidos e analisados experimentalmente. Aplicações-alvo em investigação: IoT, telecomunicações e ambientes com recursos computacionais restritos.
-
-### About
-
-The **Hubstry Security Platform** is a general-purpose cybersecurity framework integrating four core pillars: **Post-Quantum Cryptography** (NIST FIPS 203/204/205), **Harmonic Authentication** (HSL — Harmonic Security Layer), **Attack Vector Analysis** (ENISA 2025 + OWASP 2025), and **Regulatory Compliance** (NIS2, LGPD, NIST CSF 2.0, ISO 27001).
-
-Developed by **Hubstry Deep Tech** (founded in 2023), the platform originates from the **HALE** (Harmonic Addressing & Labeling Equation) mathematical framework, which started the investigation into rational harmonic subdivisions of a fundamental frequency f0 and their possible use in addressing, network segmentation, context and security. The cryptographic properties of this approach remain under experimental investigation.
-
-The **HSL** module investigates the hypothesis of a more compact authentication than conventional mechanisms. The project explored a target of approximately 200 bytes per handshake; this value has not been experimentally validated. The current implementation uses a simulated placeholder signature; integrating an ML-DSA-65 signature will imply significantly different message-size requirements, to be measured on the protocol as actually defined. Effective size, computational cost and security properties still need to be measured and analysed experimentally. Target applications under investigation: IoT, telecommunications and resource-constrained environments.
-
----
-
-## [PT-BR] Ecossistema Hubstry | [EN] Hubstry Ecosystem
-
-Este repositório faz parte do ecossistema Hubstry:
-
-| Repositório | Descrição | Link |
-|----------------|-------------|------|
-| **hubstry-hale-ecosystem** | Framework matemático HALE | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-hale-ecosystem) |
-| **iot-protocol-hubstry** | Protocolo IoT / HPG | [GitHub](https://github.com/guilherme-machado-ceo/iot-protocol-hubstry) |
-| **qualia-hub-ecosystem** | Plataforma Qualia Hub | [GitHub](https://github.com/guilherme-machado-ceo/qualia-hub-ecosystem) |
-| **hubstry-security** | Plataforma de cibersegurança (este repo) | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-security) |
-
-This repository is part of the Hubstry ecosystem:
-
-| Repository | Description | Link |
-|-----------|-------------|------|
-| **hubstry-hale-ecosystem** | HALE mathematical framework | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-hale-ecosystem) |
-| **iot-protocol-hubstry** | IoT Protocol / HPG | [GitHub](https://github.com/guilherme-machado-ceo/iot-protocol-hubstry) |
-| **qualia-hub-ecosystem** | Qualia Hub Platform | [GitHub](https://github.com/guilherme-machado-ceo/qualia-hub-ecosystem) |
-| **hubstry-security** | Cybersecurity platform (this repo) | [GitHub](https://github.com/guilherme-machado-ceo/hubstry-security) |
-
----
-
-## [PT-BR] Arquitetura | [EN] Architecture
+## Architecture and modules
 
 ```mermaid
 flowchart TD
     H[Hubstry Security Platform]
 
     H --> PQC[Post-Quantum Cryptography]
-    H --> HSL[HSL - Harmonic Auth]
+    H --> HSL[HSL - Harmonic Security Layer]
     H --> AV[Attack Vectors]
     H --> CM[Compliance Mapping]
 
-    PQC --> PQC1[NIST FIPS 203/204/205]
-    HSL --> HSL1["Autenticação harmônica (hipótese)"]
-    AV --> AV1["Análise ENISA / OWASP"]
-    CM --> CM1["NIS2 · LGPD · NIST CSF · ISO 27001"]
+    PQC --> PQC1["ML-KEM · ML-DSA · SLH-DSA (NIST FIPS 203/204/205)"]
+    HSL --> HSL1["HSL Auth v1: PSK + HMAC-SHA-256, harmonic context"]
+    AV --> AV1["ENISA / OWASP analysis"]
+    CM --> CM1["NIS2 · LGPD · NIST CSF · ISO/IEC 27001"]
 ```
 
-**Módulos / Modules:**
+| Module | Description |
+|---|---|
+| [`post-quantum/`](post-quantum/) | Experimental NIST PQC provider (ML-KEM, ML-DSA, SLH-DSA) on liboqs, with crypto-agility, canonical transcript and HKDF (HMAC-based key derivation) |
+| [`hsl/`](hsl/) | HSL Auth v1 handshake; prototypes of phase-deviation intrusion detection and LFSR-based (Linear Feedback Shift Register) key rotation; historical v0 simulation |
+| [`quantum/`](quantum/) | Quantum-research track: harmonic phase encodings and the 64-profile lattice |
+| [`attack-vectors/`](attack-vectors/) | Attack-vector catalog mapped against ENISA 2025 and OWASP 2025 |
+| [`compliance/`](compliance/) | Multi-framework regulatory mapping with incident-response playbook |
+| [`docs/`](docs/) | Architecture, threat model, research records, decision records and validation plans |
+| [`tests/`](tests/) | Test suites, including the PQC suite and HSL v1 tests |
+| [`roadmap/`](roadmap/) | Development roadmap and TRL (Technology Readiness Level) progression |
 
-| Módulo | Descrição / Description |
-|--------|------------------------|
-| [`post-quantum/`](post-quantum/) | Provedor experimental NIST PQC (ML-KEM, ML-DSA, SLH-DSA) via liboqs; pesquisa pós-quântica |
-| [`hsl/`](hsl/) | Harmonic Security Layer — autenticação baseada em coerência harmônica |
-| [`quantum/`](quantum/) | Trilha de pesquisa quântica (encodings de fase, lattice de 64 perfis) |
-| [`attack-vectors/`](attack-vectors/) | Catálogo de 14+ vetores de ataque mapeados contra ENISA 2025 e OWASP 2025 |
-| [`compliance/`](compliance/) | Mapeamento regulatório multi-framework com playbook de resposta a incidentes |
-| [`docs/`](docs/) | Arquitetura detalhada, modelo de ameaças e especificações técnicas |
-| [`roadmap/`](roadmap/) | Planejamento de desenvolvimento 2026-2027 e progressão TRL |
+## Quick start
 
----
-
-## [PT-BR] Início Rápido | [EN] Quick Start
-
-### Pré-requisitos
+### Prerequisites
 
 - Git 2.40+
-- Python 3.10+ (para exemplos de referência)
-- liboqs 0.16.0 + liboqs-python 0.16.0: necessários para usar o provedor PQC e executar `tests/pqc`. Sem eles, a suíte PQC é pulada (*skip*) localmente, o que não equivale a aprovação; com `HUBSTRY_REQUIRE_PQC=1` (usado no CI), a ausência do backend é uma falha
+- Python 3.10+
+- For the PQC suite: liboqs 0.16.0 and liboqs-python 0.16.0. Without them the PQC suite is skipped locally; with `HUBSTRY_REQUIRE_PQC=1` (as in CI) a missing backend is a failure.
 
-### Clonar / Clone
+### Clone and run
 
 ```bash
 git clone https://github.com/guilherme-machado-ceo/hubstry-security.git
 cd hubstry-security
+
+# General test suite
+python -m pytest tests/ --ignore=tests/pqc -v
+
+# PQC suite (requires liboqs 0.16.0)
+HUBSTRY_REQUIRE_PQC=1 python -m pytest tests/pqc -v
+
+# HSL Auth v1 demonstration
+python hsl/hsl_auth_v1.py
 ```
 
-### Exemplo ilustrativo — derivação HALE
+## Next milestones
 
-> **Ilustrativo e não funcional.** Este trecho não usa ML-KEM: a função calcula `fk` e o descarta, devolvendo o mesmo hash de `f0` para qualquer nível. Mantido como registro histórico; ver auditoria C05.
+1. **ML-DSA in the HSL handshake (F-01b):** integrate post-quantum signatures into HSL Auth v1, with a canonical, versioned transcript.
+2. **Digital Laboratory Twin:** a controlled, reproducible environment for system-level protocol validation.
+3. **Integrated adversarial validation:** tampering, replay, substitution and other negative scenarios across the integrated system.
 
-```python
-from hashlib import sha256
-import math
+Dates for these milestones will be set after technical validation; the roadmap history is in [roadmap/2026-2027.md](roadmap/2026-2027.md).
 
-def hale_key_derivation(f0, level, b):
-    phi = sum(1 for k in range(1, b) if math.gcd(k, b) == 1)
-    fk = f0 * (phi ** level)
-    return sha256(str(f0).encode()).digest()
-```
+## Ecosystem and compliance
 
----
+Hubstry Security is part of the Hubstry research ecosystem:
 
-## [PT-BR] Roadmap Técnico | [EN] Technical Roadmap
+| Repository | Role |
+|---|---|
+| [hubstry-hale-ecosystem](https://github.com/guilherme-machado-ceo/hubstry-hale-ecosystem) | HALE mathematical framework |
+| [iot-protocol-hubstry](https://github.com/guilherme-machado-ceo/iot-protocol-hubstry) | IoT protocol research |
+| [qualia-hub-ecosystem](https://github.com/guilherme-machado-ceo/qualia-hub-ecosystem) | Qualia Hub platform |
+| [hubstry-security](https://github.com/guilherme-machado-ceo/hubstry-security) | This cybersecurity platform |
 
-| Fase | Período | TRL | Entregáveis |
-|------|------------|-----|-------------|
-| **Fase 1** | A definir (original: Q2 2026) | 3-4 | Validação laboratorial do HSL; benchmarks contra TLS 1.3 |
-| **Fase 2** | A definir (original: Q3 2026) | 4-5 | Integração ML-KEM-768 + HSL; PoC em ambiente controlado |
-| **Fase 3** | A definir (original: Q1 2027) | 5-6 | Testes com parceiro de validação; conformidade NIS2 validada |
+Frameworks mapped in [compliance/](compliance/):
 
-> As fases 1 e 2 não foram concluídas nos prazos originais e serão replanejadas; a fase 3 depende delas. As datas originais aparecem apenas como registro histórico; novas datas ainda não foram definidas.
-
-Veja o roadmap completo em [`roadmap/2026-2027.md`](roadmap/2026-2027.md).
-
----
-
-## [PT-BR] Conformidade Regulatória | [EN] Regulatory Compliance
-
-- **ENISA NIS2** — Medidas de segurança de rede e informação (UE 2022/2555)
-- **LGPD** — Lei Geral de Proteção de Dados (Brasil, Lei 13.709/2018)
+- **NIS2** — EU network and information security measures (Directive (EU) 2022/2555)
+- **LGPD** — Lei Geral de Proteção de Dados (Brazil, Law 13.709/2018)
 - **NIST CSF 2.0** — Cybersecurity Framework v2.0 (2024)
-- **ISO 27001:2022** — Information Security Management System
+- **ISO/IEC 27001:2022** — Information Security Management System
 - **OWASP ASVS 4.0** — Application Security Verification Standard
 
-Detalhes em [`compliance/`](compliance/).
+## Partnerships
 
----
+We are open to **research and validation partnerships** in post-quantum cryptography, protocol security, constrained systems and security experimentation.
 
-## [PT-BR] Segurança | [EN] Security
+Contact: **guilhermemachado.ceo@hubstry.dev**
 
-Reporte vulnerabilidades em [`SECURITY.md`](SECURITY.md).
+## Resumo em português
 
----
+A **Hubstry Security Platform** prepara sistemas para a migração à criptografia pós-quântica, com desenvolvimento orientado a evidência. Origina-se do **HALE** (Harmonic Addressing & Labeling Equation), framework matemático da Hubstry Deep Tech desenvolvido desde 2023, do qual nasceu a linha de pesquisa **HSL** (Harmonic Security Layer, camada de segurança harmônica).
 
-## [PT-BR] Contribuição | [EN] Contributing
+Resultados verificados: provedor experimental com os três padrões pós-quânticos do NIST (ML-KEM-768, ML-DSA-65 e SLH-DSA), com 19 testes reproduzidos de forma independente; handshake HSL Auth v1 com 32 testes; trilha de pesquisa quântica com 136 testes em três ambientes; catálogo de 14 vetores de ataque; e mapeamento regulatório (NIS2, LGPD, NIST CSF 2.0, ISO/IEC 27001). Três verificações automáticas são obrigatórias antes de qualquer alteração entrar na versão principal.
 
-Contribuições são bem-vindas! Consulte [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Parcerias de pesquisa e validação: **guilhermemachado.ceo@hubstry.dev**.
 
----
+## Maturity and limitations
 
-## [PT-BR] Licença | [EN] License
+Current technical status, non-claims and historical records: [`docs/STATUS.md`](docs/STATUS.md). TRL assessment: [`docs/TRL.md`](docs/TRL.md) — system-level TRL 4 is not yet established; component results are tracked separately from protocol and laboratory validation.
 
-Este projeto está licenciado sob **CC BY-NC-SA 4.0** — uso não comercial. Veja [`LICENSE`](LICENSE).
+## Security, contributing and license
 
-This project is licensed under **CC BY-NC-SA 4.0** — non-commercial use. See [`LICENSE`](LICENSE).
+- **Security:** report vulnerabilities as described in [SECURITY.md](SECURITY.md).
+- **Contributing:** see [CONTRIBUTING.md](CONTRIBUTING.md).
+- **License:** [CC BY-NC-SA 4.0](LICENSE) (non-commercial use).
 
 ---
 
 <div align="center">
 
-**Hubstry Deep Tech** | Fundada em 2023 | Brasil
+**Hubstry Deep Tech** · Founded in 2023 · Brazil
 
-[www.hubstry.dev](https://www.hubstry.dev) | [LinkedIn](https://www.linkedin.com/in/guilhermegoncalvesmachado)
+[hubstry.dev](https://www.hubstry.dev) · [LinkedIn](https://www.linkedin.com/in/guilhermegoncalvesmachado)
 
 </div>
