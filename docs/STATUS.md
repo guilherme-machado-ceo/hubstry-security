@@ -27,6 +27,11 @@ This file is the canonical technical status ledger for the public project overvi
 **Não reivindicado:** tamanho de handshake validado, equivalência de segurança com TLS 1.3, resistência quântica, autenticação mútua, adequação validada a qualquer ambiente de aplicação. Auditoria documental completa e achados de implementação:
 [`docs/research/hsl-documentation-audit-2026-10.md`](research/hsl-documentation-audit-2026-10.md).
 
+## Escopo atual do provedor PQC e do HSL Auth v1
+
+- O provedor PQC ainda não é usado por nenhum fluxo da plataforma, incluindo o handshake HSL. Não é uma implementação criptograficamente validada. Ver [`post-quantum/README.md`](../post-quantum/README.md).
+- O HSL Auth v1 corrige, nesta implementação experimental, os achados F-02 a F-09 da auditoria, com 32 testes; não há revisão criptográfica externa. Não usa assinatura pós-quântica: a integração de ML-DSA ao handshake (F-01b) está pendente. Relatório: [`research/hsl-v1-execution-report-2026-10.md`](research/hsl-v1-execution-report-2026-10.md).
+
 ## Registros históricos preservados
 
 As seguintes linhas e descrições fazem parte do histórico do projeto e permanecem aqui como registro:
@@ -38,7 +43,7 @@ As seguintes linhas e descrições fazem parte do histórico do projeto e perman
 
 ## Meta histórica de aproximadamente 200 bytes
 
-O projeto explorou uma meta de aproximadamente 200 bytes por handshake; esse valor não foi validado experimentalmente. A implementação atual utiliza uma assinatura simulada como placeholder; a integração de uma assinatura ML-DSA-65 implicará requisitos de tamanho de mensagem significativamente diferentes, a serem medidos no protocolo efetivamente definido. Tamanho efetivo, custo computacional e propriedades de segurança ainda precisam ser medidos e analisados experimentalmente. Aplicações-alvo em investigação: IoT, telecomunicações e ambientes com recursos computacionais restritos.
+O projeto explorou uma meta de aproximadamente 200 bytes por handshake; esse valor não foi validado experimentalmente. A simulação v0 utiliza uma assinatura simulada como placeholder; a integração de uma assinatura ML-DSA-65 implicará requisitos de tamanho de mensagem significativamente diferentes, a serem medidos no protocolo efetivamente definido. Tamanho efetivo, custo computacional e propriedades de segurança ainda precisam ser medidos e analisados experimentalmente. Aplicações-alvo em investigação: IoT, telecomunicações e ambientes com recursos computacionais restritos.
 
 ## Nota sobre prazos
 
