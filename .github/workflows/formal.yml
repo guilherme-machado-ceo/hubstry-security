@@ -44,18 +44,14 @@ jobs:
             exit 1
           fi
 
-      - name: "Independent source: compare ProVerif tarball with the Debian archive"
+      - name: "Independent source: ProVerif checksum published in opam-repository"
         run: |
-          pool="https://deb.debian.org/debian/pool/main/p/proverif/"
-          curl -fsSL "$pool" -o pool.html || { echo "::warning title=debian-crosscheck::pool not reachable"; exit 0; }
-          grep -oE 'proverif_[^"<>]*orig[^"<>]*' pool.html | sort -u | while IFS= read -r f; do echo "::notice title=debian-pool::$f"; done
-          f=$(grep -oE "proverif_${PROVERIF_VERSION}[^\"<>]*orig\.tar\.gz" pool.html | sort -u | head -1)
-          if [ -z "$f" ]; then echo "::warning title=debian-crosscheck::no orig tarball for ${PROVERIF_VERSION} in Debian pool"; exit 0; fi
-          curl -fsSL "$pool$f" -o debian.tar.gz
-          d=$(sha256sum debian.tar.gz | cut -d' ' -f1)
-          echo "::notice title=debian-crosscheck::$f sha256 $d; pinned $PROVERIF_SHA256"
-          if [ "$d" = "$PROVERIF_SHA256" ]; then echo "::notice title=debian-crosscheck::MATCH"; else
-            mkdir -p a b && tar -xzf debian.tar.gz -C a && echo "::notice title=debian-crosscheck::byte-level differs; contents listed in log"; ls -R a | head -20; fi
+          base="https://raw.githubusercontent.com/ocaml/opam-repository/master/packages/proverif/proverif.${PROVERIF_VERSION}/opam"
+          if ! curl -fsSL "$base" -o opam.txt; then echo "::warning title=opam-crosscheck::opam file not reachable"; exit 0; fi
+          grep -E 'src:|sha256|sha512|md5' opam.txt | while IFS= read -r l; do echo "::notice title=opam-file::$l"; done
+          o=$(grep -oE 'sha256=[0-9a-f]{64}' opam.txt | head -1 | cut -d= -f2)
+          echo "::notice title=opam-crosscheck::opam sha256 ${o:-none}; pinned $PROVERIF_SHA256"
+          if [ "$o" = "$PROVERIF_SHA256" ]; then echo "::notice title=opam-crosscheck::MATCH"; else echo "::warning title=opam-crosscheck::NO MATCH or no sha256"; fi
 
       - name: Install ProVerif from the official source tarball
         run: |
