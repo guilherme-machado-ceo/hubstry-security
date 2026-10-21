@@ -373,7 +373,7 @@ O controle (ii) mostra que o modelo discrimina as propriedades: remover a verifi
 | SHA-256 do pacote-fonte | `4871f53c32ab4a04669a060c4886ba5d9080496963fb980a9a62d2c429ceabc4` |
 | Fixação | Desde o commit `20e21ec`, anterior ao run de referência, o workflow rejeita qualquer pacote com outro hash; o run de referência foi conferido contra esse valor |
 
-**Limite da fixação:** o hash foi obtido na primeira observação do pacote oficial (modelo *trust on first use*). Ele garante que execuções futuras usem o mesmo pacote, mas não substitui uma conferência contra soma publicada pelos autores ou contra uma distribuição independente. Essa conferência está pendente.
+**Conferência independente:** o hash foi obtido na primeira observação do pacote oficial e depois conferido contra uma fonte independente: o arquivo de pacote do ProVerif 2.05 no repositório comunitário da linguagem OCaml (`ocaml/opam-repository`, `packages/proverif/proverif.2.05/opam`), que publica o mesmo SHA-256 para o pacote-fonte. A conferência foi feita no workflow `formal`, run `39588941485`, e passou a ser repetida a cada execução, como etapa informativa: uma divergência gera alerta, e o hash fixado continua sendo a trava que bloqueia a execução.
 
 ### 12.4 Correspondência entre modelo e implementação
 

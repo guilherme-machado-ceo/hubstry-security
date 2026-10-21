@@ -6,7 +6,7 @@ name: formal
 
 on:
   push:
-    branches: [main, spec/hsl-auth-v1-formal, ci/proverif-hash-crosscheck]
+    branches: [main, spec/hsl-auth-v1-formal]
     paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", "hsl/hsl_auth_v1.py", ".github/workflows/formal.yml"]
   pull_request:
     paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", "hsl/hsl_auth_v1.py", ".github/workflows/formal.yml"]
