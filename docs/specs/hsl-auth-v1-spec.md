@@ -174,7 +174,7 @@ sid  = MAC(K, L_SESS ‖ U)[0 .. 16)
 | `pend_R[nB]` | `(U, instante de criação, idA)` | `W` segundos após a criação |
 | `seen[(idA, nA)]` | instante de expiração `tA + W` | Até o último instante em que `tA` ainda é aceito pela janela (inclusive) |
 
-Esse estado é volátil: vive enquanto a instância do motor estiver ativa e não é compartilhado entre instâncias. As operações públicas de uma instância (`INITIATE`, `RESPOND`, `FINISH`, `COMPLETE`) são serializadas por uma trava interna reentrante, e o estado pendente só é consumido depois que a mensagem passa por todas as verificações. A configuração e o registro de pares são imutáveis após a criação.
+Esse estado é volátil: vive enquanto a instância do motor estiver ativa e não é compartilhado entre instâncias. As operações públicas de uma instância (`INITIATE`, `RESPOND`, `FINISH`, `COMPLETE`) são serializadas por uma trava interna reentrante, e o estado pendente só é consumido depois que a mensagem passa por todas as verificações. Os objetos de configuração (`HSLAuthConfig`) e de registro de pares são imutáveis após a criação; os atributos do motor que os referenciam (`config`, `peers`) ainda podem ser substituídos pelo próprio processo local, o que não é uma superfície de ataque remoto, mas fica registrado como melhoria de encapsulamento.
 
 ### 7.2 Máquina de estados por execução
 
@@ -289,7 +289,7 @@ O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *
 - **Sigilo futuro (*forward secrecy*):** o comprometimento de `K` compromete as execuções passadas e futuras.
 - **Chave de sessão:** o protocolo não estabelece chave para proteger dados.
 - **Disponibilidade:** o atacante pode impedir a conclusão de execuções (ver H-1). Isso é inevitável no modelo Dolev-Yao. Antes da correção de H-1, uma única mensagem falsa bastava para cancelar uma execução; após a correção, mensagens inválidas são rejeitadas sem afetar a execução legítima. Além disso, a mensagem 1 não é autenticada por desenho: cada desafio bem formado com identificador de par válido faz o respondente calcular um HMAC e criar estado (ver H-7).
-- **Repetição após reinício ou retrocesso do relógio:** o registro `seen` é volátil e pressupõe relógio monotônico (A4).
+- **Repetição após reinício ou retrocesso do relógio:** o registro `seen` é volátil e pressupõe relógio monotônico (A4). O relógio padrão da implementação (`time.time`, relógio do sistema) pode retroceder após um ajuste; antes de uso operacional, é necessária uma estratégia para detectar ou mitigar retrocessos.
 - **Limite de tentativas:** mensagens inválidas são rejeitadas sem afetar a execução legítima, mas não há limite de tentativas dentro de `W`; com tags de 256 bits a falsificação é inviável, mas cada tentativa custa um HMAC ao receptor (ver H-7).
 - **Autenticação entre nós que compartilham a mesma PSK:** fora da premissa A2.
 - **Resistência quântica:** HMAC-SHA-256 com chave de 256 bits é considerado robusto contra os ataques quânticos conhecidos, mas esta especificação não reivindica propriedade pós-quântica.
