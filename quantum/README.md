@@ -130,3 +130,17 @@ optimal for the symmetric encodings) and Holevo quantity.
   log2(n) bits.
 
 Research record: [`docs/research/hale-q-capacity-2026-10.md`](../docs/research/hale-q-capacity-2026-10.md).
+
+## Quantizer composition and grid hierarchy (2026-10-21)
+
+`quantum/quantizer_composition.py` verifies, with exact rational arithmetic,
+when re-reading a phase address from a fine grid n onto a coarse grid m agrees
+with a direct coarse reading.
+
+- Nearest-point rounding (m >= 2): consistent iff n/m is an odd integer.
+  Binary hierarchies (ratio 2 or 4) disagree on a fixed fraction of phases.
+- Floor (truncation): consistent iff m divides n.
+- Exact disagreement fractions, separately for the interval [0, 1) and the
+  circle (phases); the interval formulas correct the working paper.
+
+Research record: [`docs/research/quantizer-composition-2026-10.md`](../docs/research/quantizer-composition-2026-10.md).
