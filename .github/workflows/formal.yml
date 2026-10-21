@@ -23,7 +23,7 @@ env:
   PROVERIF_VERSION: "2.05"
   # Expected SHA-256 of the official ProVerif source tarball. When set, the
   # download must match it. See docs/specs/hsl-auth-v1-spec.md, section 12.
-  PROVERIF_SHA256: ""
+  PROVERIF_SHA256: "4871f53c32ab4a04669a060c4886ba5d9080496963fb980a9a62d2c429ceabc4"
 
 jobs:
   proverif:
@@ -48,7 +48,7 @@ jobs:
           ./build -nointeract
           echo "$PWD" >> "$GITHUB_PATH"
 
-      - name: "Main model: P1-P4 all proved (5/5 queries true)"
+      - name: "Main model: 5/5 queries true (P1, P2 with P3 embedded, P4)"
         run: |
           mkdir -p out
           proverif formal/proverif/hsl_auth_v1.pv | tee out/main.txt

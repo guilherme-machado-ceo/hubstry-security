@@ -320,16 +320,79 @@ O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *
 
 ---
 
-## 12. Próximo passo: verificação formal
+## 12. Verificação formal simbólica (ProVerif)
 
-As propriedades P1 a P4 serão verificadas com o **ProVerif**, verificador automático de protocolos criptográficos no modelo simbólico (Dolev-Yao). O modelo cobrirá:
-- execuções ilimitadas e concorrentes, com os dois papéis em cada nó;
-- um terceiro nó controlado pelo atacante, com PSKs próprias com A e com B (premissa A2 respeitada);
-- casos de controle, em que a ferramenta deve encontrar ataque: (i) a mesma PSK compartilhada com o terceiro nó, violando A2; (ii) o respondente deixa de verificar a mensagem 3 (regressão do achado F-05 da auditoria).
+### 12.1 Objeto e método
 
-Modelo: [`formal/proverif/`](../../formal/proverif/). A execução ocorre no GitHub Actions ([`.github/workflows/formal.yml`](../../.github/workflows/formal.yml)).
+As propriedades P1 a P4 foram verificadas com o **ProVerif 2.05**, verificador automático de protocolos criptográficos no modelo simbólico (Dolev-Yao). O modelo cobre:
+- execuções ilimitadas e concorrentes, com os dois papéis em cada nó honesto (A e B);
+- um terceiro nó C, controlado pelo atacante, com PSKs próprias com A e com B (premissa A2 respeitada);
+- dois modelos de controle, nos quais a ferramenta deve encontrar ataque:
+  - (i) a mesma PSK compartilhada com C, violando A2;
+  - (ii) o respondente deixa de verificar a mensagem 3 (regressão do achado F-05 da auditoria).
 
-Limites que o relatório de verificação registrará:
-- o modelo simbólico trata o HMAC como primitiva ideal; não é uma prova computacional por redução;
-- relógio, janela temporal, expiração e reinício de processo são abstraídos;
-- a correspondência entre o modelo e o código Python é estabelecida por revisão (seção 11), não por extração automática.
+Arquivos: [`formal/proverif/`](../../formal/proverif/). A execução ocorre no GitHub Actions, em [`.github/workflows/formal.yml`](../../.github/workflows/formal.yml). Cada linha de resultado do ProVerif é publicada como anotação da execução, e a saída completa fica no artefato `proverif-results`.
+
+**Consultas do modelo principal.** São cinco consultas, não cinco propriedades independentes:
+- duas consultas de correspondência injetiva para P1 (pares A→B e B→A);
+- duas para P2 (pares A→B e B→A);
+- uma de sigilo para P4.
+
+P3 não tem consulta própria: está incorporada às quatro consultas de correspondência, cujos eventos carregam o transcript completo e o identificador de sessão.
+
+### 12.2 Resultados
+
+Execução de referência: workflow `formal`, run `39573122897`, commit `fd1eb22`. Os resultados abaixo foram transcritos das anotações da execução.
+
+| Modelo | Consulta | Resultado | Esperado |
+|---|---|---|---|
+| Principal | `inj-event(AcceptI(A,B,t,s)) ==> inj-event(BeginR(B,A,t,s))` (P1) | verdadeiro | verdadeiro |
+| Principal | `inj-event(AcceptI(B,A,t,s)) ==> inj-event(BeginR(A,B,t,s))` (P1) | verdadeiro | verdadeiro |
+| Principal | `inj-event(AcceptR(B,A,t,s)) ==> inj-event(BeginI(A,B,t,s))` (P2) | verdadeiro | verdadeiro |
+| Principal | `inj-event(AcceptR(A,B,t,s)) ==> inj-event(BeginI(B,A,t,s))` (P2) | verdadeiro | verdadeiro |
+| Principal | `not attacker(kab)` (P4) | verdadeiro | verdadeiro |
+| Controle (i) | as quatro consultas de P1 e P2, inclusive na forma não injetiva | falso (ataque encontrado) | falso |
+| Controle (ii) | as duas consultas de P2, inclusive na forma não injetiva | falso (ataque encontrado) | falso |
+| Controle (ii) | as duas consultas de P1 e a de P4 | verdadeiro | verdadeiro |
+
+O controle (ii) mostra que o modelo discrimina as propriedades: remover a verificação da mensagem 3 quebra apenas a autenticação do iniciador, e as demais continuam valendo.
+
+### 12.3 Ambiente e integridade
+
+| Item | Valor |
+|---|---|
+| Verificador | ProVerif 2.05 (Blanchet, Cheval e Sylvestre), compilado no runner a partir do pacote-fonte oficial |
+| SHA-256 do pacote-fonte | `4871f53c32ab4a04669a060c4886ba5d9080496963fb980a9a62d2c429ceabc4` |
+| Fixação | A partir do commit seguinte ao run de referência, o workflow rejeita qualquer pacote com outro hash |
+
+**Limite da fixação:** o hash foi obtido na primeira observação do pacote oficial (modelo *trust on first use*). Ele garante que execuções futuras usem o mesmo pacote, mas não substitui uma conferência contra soma publicada pelos autores ou contra uma distribuição independente. Essa conferência está pendente.
+
+### 12.4 Correspondência entre modelo e implementação
+
+O ProVerif analisa o modelo, não o código Python. A validade das conclusões para a implementação depende das abstrações abaixo.
+
+| Mecanismo da implementação | Tratamento | Evidência |
+|---|---|---|
+| Conteúdo do transcript `T` (campos e ordem) | Representado diretamente, como tupla simbólica | Modelo; seção 6.3 |
+| Serialização em bytes, prefixos de comprimento, decodificação | Abstraído. A tupla simbólica pressupõe codificação injetiva, garantida pelos prefixos de comprimento (seção 6.3) | Testes de implementação `test_f06_*` (ida e volta, bytes truncados e excedentes, tipo errado) |
+| Separação de domínio pelos rótulos | Representado (constantes distintas) | Modelo; seção 2 (rótulos prefix-distintos) |
+| HMAC-SHA-256 | Abstraído pela premissa C1 (função ideal sem inversa) | Premissa; `test_f02_*` confirma o uso de HMAC com chave |
+| Truncamento do `sid` a 16 bytes | Representado como função opaca `trunc16` | Modelo; colisões de 128 bits desconsideradas por premissa |
+| Frescor dos nonces | Representado (nomes novos a cada execução) | Modelo; premissa A5 |
+| Carimbo de tempo e janela `W` | Abstraído: `tA` é valor público novo; a janela não é modelada | Testes `test_stale_challenge_is_rejected`, `test_expired_pending_challenge_is_rejected` |
+| Estado pendente (`pend_I`, `pend_R`) | Representado de forma implícita: cada processo de sessão só aceita a mensagem com seu próprio nonce | Modelo; testes de repetição |
+| Ordem de consumo do estado (H-1) | Fora do modelo | Achado H-1, reproduzido; correção em micro-sprint separado |
+| Registro `seen` contra repetição | Fora do modelo. No modelo, a resistência a repetição decorre da correspondência injetiva com nonces frescos | Testes `test_f08_*` |
+| Expiração, reinício de processo, concorrência entre threads | Fora do escopo | Declarado na seção 9.5 |
+| `check_peer` (identificador próprio, registro, fase) | Representado (`idA <> me`, tabela de chaves, `slot`) | Modelo; testes `test_f04_*`, `test_reflection_*` |
+| PSK exclusiva por par (A2) | Representado como tabela de chaves por par | Modelo; controle (i) mostra que a premissa é necessária |
+| Comparação em tempo constante | Fora do escopo | Premissa A6 |
+
+### 12.5 O que a verificação sustenta e o que não sustenta
+
+**Sustenta:** no modelo simbólico, sob as premissas A1–A6 e C1–C2, nenhum atacante que controle a rede consegue fazer um nó honesto aceitar uma execução que o outro nó honesto não realizou com os mesmos dados (P1, P2 e P3), nem obter a PSK do par (P4).
+
+**Não sustenta:**
+- que o código Python inteiro esteja formalmente verificado. A correspondência é estabelecida por revisão (seções 11 e 12.4) e por testes, não por extração automática;
+- uma prova computacional por redução, com limites explícitos de vantagem do atacante. Esse é um trabalho distinto, cuja extensão ainda não foi avaliada;
+- propriedades de disponibilidade, o mecanismo operacional de prevenção de repetição, nem o comportamento após reinício.
