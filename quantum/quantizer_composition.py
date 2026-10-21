@@ -16,27 +16,40 @@ Divergence: mu(m, n) = Lebesgue measure of {x : A_m(A_n(x)) != A_m(x)}.
 
 Results verified exhaustively over finite ranges in tests/test_quantizer_composition.py:
   Theorem 1 (floor):  Q_m o Q_n = Q_m pointwise  <=>  m | n.
-  Theorem 2 (round, both domains, m >= 2):  R_m o R_n = R_m a.e.  <=>  n/m odd integer.
+  Theorem 2 (round, both domains, m >= 2):  R_m o R_n = R_m a.e.  <=>  n/m odd integer;
+            when n/m is odd the equality holds pointwise (not only a.e.).
             For m = 1, R_1 is constant, so R_1 o R_n = R_1 for every n.
   Divergence for n > m, q = n/m (round):
             q odd integer      CIRCLE 0          INTERVAL 0
             q even integer     CIRCLE m/(2n)     INTERVAL (m-1)/(2n)
+                               (circle formula requires m >= 2; for m = 1 the
+                               divergence is 0 in both domains, and the interval
+                               formula (m-1)/(2n) already gives 0)
             q not integer      CIRCLE sum_{j=0}^{m-1} d_j
                                INTERVAL sum_{j=0}^{m-2} d_j
             where d_j is the distance from b_j = (j+1/2)/m to the nearest
-            Voronoi edge (k+1/2)/n of R_n.
+            Voronoi edge (k+1/2)/n of R_n. For n > m >= 2 the circle exceeds
+            the interval by exactly d_0 (1/(2n) only in the even-ratio case).
   Divergence for n | m, n < m (round):
-            CIRCLE 1 - n/m     INTERVAL 1 - n/m + 1/(2m)
+            CIRCLE 1 - n/m     INTERVAL 1 - n/m + 1/(2m)   (here the interval
+            exceeds the circle by 1/(2m))
+  General cell formula (any m, n; interval m >= 1, circle m >= 2), proposed in
+  the 2026-10-21 audit and pending human review: see divergence_by_cells().
 
 Addressing reading: a HALE-Q address read on a fine phase grid n and then
 re-read on a coarse grid m by nearest-point rounding is consistent with a
-direct coarse reading iff n/m is an odd integer; mu is the fraction of
+direct coarse reading iff n/m is an odd integer (coarse grid m >= 2); then it
+agrees at every phase, not only almost everywhere. mu is the fraction of
 phases that land on a different coarse address.
 
 Classification (project governance):
-  The theorems are mathematical results of the source working paper; this
-  module provides exact computational verification over finite ranges,
-  which is regression evidence, not a general proof.
+  Theorems 1 and 2 are results of the source working paper (v1.0), with the
+  m >= 2 correction. The paper states its divergence formulas for the interval,
+  where they are wrong; the values it gives are correct only on the circle.
+  The interval formulas, the circle/interval comparison and the cell formula
+  were derived in an audit and are pending human review. This module provides
+  exact computational verification over finite ranges, which is regression
+  evidence, not a general proof.
   No security, hardness or quantum claim is made.
 
 Run:
@@ -149,6 +162,58 @@ def round_divergence_closed_form(m: int, n: int, domain: str) -> Fraction:
         base = 1 - Fraction(n, m)
         return base if domain == CIRCLE else base + Fraction(1, 2 * m)
     raise ValueError("n < m with n not dividing m is not classified")
+
+
+def _level_cells(n: int, domain: str, split_cap: bool = False) -> list[tuple[Fraction, Fraction, Fraction]]:
+    """Cells (a, g, e) of R_n: x in [a, e) is mapped to g (circle cells are lifted to R).
+
+    Interval: the last cell is the whole level set [(n - 3/2)/n, 1) of the cap.
+    With split_cap=True the cap piece [1 - 1/(2n), 1) is listed as a separate
+    cell whose image g lies to its left (used to test the clamped formula).
+    """
+    if domain == CIRCLE:
+        return [(Fraction(2 * k - 1, 2 * n), Fraction(k, n), Fraction(2 * k + 1, 2 * n)) for k in range(n)]
+    cells = []
+    for k in range(n):
+        a, g = max(Fraction(0), Fraction(2 * k - 1, 2 * n)), Fraction(k, n)
+        if k < n - 1:
+            cells.append((a, g, Fraction(2 * k + 1, 2 * n)))
+        elif split_cap:
+            cells.append((a, g, Fraction(2 * k + 1, 2 * n)))
+            cells.append((Fraction(2 * k + 1, 2 * n), g, Fraction(1)))
+        else:
+            cells.append((a, g, Fraction(1)))
+    return cells
+
+
+def divergence_by_cells(m: int, n: int, domain: str, split_cap: bool = False) -> Fraction:
+    """Cell formula for mu(m, n) (proposed in audit, pending human review).
+
+    On each cell [a, e) with image g, x diverges iff a jump b of R_m satisfies
+    min(x, g) < b <= max(x, g). The contribution of each side is clamped to
+    the cell, so the formula does not depend on g lying inside [a, e):
+        left:  max(0, min(beta, e) - a),          beta  = max(J in (min(a, g), g])
+        right: max(0, e - max(a, g, alpha)),      alpha = min(J in (g, e))
+    J = jumps of R_m: (j + 1/2)/m for j = 0..m-2 (interval) or all j (circle).
+    Valid for every m, n on the interval and for m >= 2 on the circle.
+    """
+    _check(m)
+    _check(n)
+    if domain not in DOMAINS:
+        raise ValueError("domain must be 'interval' or 'circle'")
+    if domain == CIRCLE and m == 1:
+        return Fraction(0)
+    js = range(m - 1) if domain == INTERVAL else range(-m, 2 * m)
+    jumps = [Fraction(2 * j + 1, 2 * m) for j in js]
+    total = Fraction(0)
+    for a, g, e in _level_cells(n, domain, split_cap):
+        left = [b for b in jumps if min(a, g) < b <= g]
+        right = [b for b in jumps if g < b < e]
+        if left:
+            total += max(Fraction(0), min(max(left), e) - a)
+        if right:
+            total += max(Fraction(0), e - max(a, g, min(right)))
+    return total
 
 
 def round_equivalent(m: int, n: int) -> bool:
