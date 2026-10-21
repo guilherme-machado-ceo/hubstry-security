@@ -59,31 +59,27 @@ jobs:
           ./build -nointeract
           echo "$PWD" >> "$GITHUB_PATH"
 
-      - name: "Main model: 5/5 queries true (P1, P2 with P3 embedded, P4)"
+      - name: "Main model: results equal formal/proverif/expected/hsl_auth_v1.txt"
         run: |
           mkdir -p out
-          proverif formal/proverif/hsl_auth_v1.pv | tee out/main.txt
-          grep '^RESULT' out/main.txt | while IFS= read -r l; do echo "::notice title=main::$l"; done
-          test "$(grep -c '^RESULT inj-event(AcceptI(.* is true\.$' out/main.txt)" -eq 2
-          test "$(grep -c '^RESULT inj-event(AcceptR(.* is true\.$' out/main.txt)" -eq 2
-          test "$(grep -c '^RESULT not attacker(kab\[\]) is true\.$' out/main.txt)" -eq 1
-          test "$(grep -c '^RESULT' out/main.txt)" -eq 5
+          proverif formal/proverif/hsl_auth_v1.pv | tee out/hsl_auth_v1.txt
+          grep '^RESULT' out/hsl_auth_v1.txt | while IFS= read -r l; do echo "::notice title=main::$l"; done
+          grep '^RESULT' out/hsl_auth_v1.txt | LC_ALL=C sort > out/hsl_auth_v1.results
+          diff -u formal/proverif/expected/hsl_auth_v1.txt out/hsl_auth_v1.results
 
-      - name: "Control (i) attacker knows the pair PSK: all 4 P1/P2 queries false"
+      - name: "Control (i): results equal formal/proverif/expected/control_shared_psk.txt"
         run: |
           proverif formal/proverif/control_shared_psk.pv | tee out/control_shared_psk.txt
           grep '^RESULT' out/control_shared_psk.txt | while IFS= read -r l; do echo "::notice title=control-shared-psk::$l"; done
-          test "$(grep -c '^RESULT inj-event(Accept[IR](.* is false\.$' out/control_shared_psk.txt)" -eq 4
-          ! grep -E '^RESULT .* (is true|cannot be proved)' out/control_shared_psk.txt
+          grep '^RESULT' out/control_shared_psk.txt | LC_ALL=C sort > out/control_shared_psk.results
+          diff -u formal/proverif/expected/control_shared_psk.txt out/control_shared_psk.results
 
-      - name: "Control (ii) step 3 not verified: P2 false (2), P1 true (2), P4 true"
+      - name: "Control (ii): results equal formal/proverif/expected/control_no_verify.txt"
         run: |
           proverif formal/proverif/control_no_verify.pv | tee out/control_no_verify.txt
           grep '^RESULT' out/control_no_verify.txt | while IFS= read -r l; do echo "::notice title=control-no-verify::$l"; done
-          test "$(grep -c '^RESULT inj-event(AcceptR(.* is false\.$' out/control_no_verify.txt)" -eq 2
-          test "$(grep -c '^RESULT inj-event(AcceptI(.* is true\.$' out/control_no_verify.txt)" -eq 2
-          test "$(grep -c '^RESULT not attacker(kab\[\]) is true\.$' out/control_no_verify.txt)" -eq 1
-          ! grep -E '^RESULT .* cannot be proved' out/control_no_verify.txt
+          grep '^RESULT' out/control_no_verify.txt | LC_ALL=C sort > out/control_no_verify.results
+          diff -u formal/proverif/expected/control_no_verify.txt out/control_no_verify.results
 
       - name: Record environment
         if: always()

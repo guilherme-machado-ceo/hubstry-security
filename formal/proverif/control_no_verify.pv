@@ -1,7 +1,9 @@
 (* HSL Auth v1 (PSK-HMAC) - symbolic ProVerif model.
    Specification: docs/specs/hsl-auth-v1-spec.md
    Attacker model: Dolev-Yao (controls the network; cannot break HMAC).
-   HMAC-SHA-256 is modelled as an ideal one-way function (assumption C1).
+   HMAC-SHA-256 is modelled as a symbolic MAC: a free function with no
+   equations and no destructor, so a valid tag can only be built with the
+   key (unforgeability, assumption C1).
    Clock, time window, expiry and process restart are abstracted. *)
 
 free c: channel.

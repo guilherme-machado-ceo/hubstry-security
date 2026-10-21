@@ -5,7 +5,7 @@
 | Documento | Especificação técnica normativa do protocolo de autenticação HSL Auth v1 |
 | Versão do documento | 0.1 (rascunho para revisão) |
 | Implementação de referência | [`hsl/hsl_auth_v1.py`](../../hsl/hsl_auth_v1.py), última alteração no commit `e8f15f5`; `main` em `656c6b8` |
-| Estado | Protocolo experimental. Sem revisão criptográfica externa. Sem verificação formal concluída. |
+| Estado | Protocolo experimental. Sem revisão criptográfica externa. Verificação formal simbólica do modelo documentada na seção 12; não há verificação formal do código Python nem prova computacional. |
 
 As palavras **DEVE**, **NÃO DEVE** e **PODE** têm sentido normativo, no estilo da RFC 2119 (convenção da IETF — Internet Engineering Task Force — para requisitos em especificações).
 
@@ -278,7 +278,7 @@ Aqui `X = (f0, base, idA, slotA, nA, tA, idB, slotB, nB)` é o conteúdo do tran
 | **P1** | Autenticação do respondente (acordo injetivo) | Se A executa `AcceptI(A, B, X)` e `K` não foi comprometida, então B executou `BeginR(B, A, X)` antes, e a cada `AcceptI` corresponde um `BeginR` distinto. |
 | **P2** | Autenticação do iniciador (acordo injetivo) | Se B executa `AcceptR(B, A, X)` e `K` não foi comprometida, então A executou `BeginI(A, B, X)` antes, e a cada `AcceptR` corresponde um `BeginI` distinto. |
 | **P3** | Vinculação da sessão | Quando A e B aceitam a mesma execução, concordam sobre os identificadores, as fases, os dois nonces, o carimbo de tempo, o contexto (`f0`, `base`) e o `sid`. Na verificação simbólica, o contexto é global (ver 12.4); a rejeição entre nós com contextos divergentes é sustentada por teste, não pelo modelo. |
-| **P4** | Sigilo da PSK | O atacante não obtém `K` a partir das execuções do protocolo. No modelo simbólico, esta propriedade decorre diretamente da modelagem do HMAC como função ideal sem inversa (premissa C1) e do fato de `K` nunca ser transmitida; a consulta correspondente funciona como verificação de sanidade do modelo, não como resultado independente. |
+| **P4** | Sigilo da PSK | O atacante não obtém `K` a partir das execuções do protocolo. No modelo simbólico, esta propriedade decorre diretamente da modelagem do HMAC como MAC simbólico, sem equações nem destrutor (premissa C1) e do fato de `K` nunca ser transmitida; a consulta correspondente funciona como verificação de sanidade do modelo, não como resultado independente. |
 
 O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *dentro* do modelo: uma mensagem antiga reenviada não produz uma segunda aceitação.
 
@@ -338,7 +338,7 @@ As propriedades P1 a P4 foram verificadas com o **ProVerif 2.05**, verificador a
   - (i) a mesma PSK compartilhada com C, violando A2;
   - (ii) o respondente deixa de verificar a mensagem 3 (regressão do achado F-05 da auditoria).
 
-Arquivos: [`formal/proverif/`](../../formal/proverif/). A execução ocorre no GitHub Actions, em [`.github/workflows/formal.yml`](../../.github/workflows/formal.yml). Cada linha de resultado do ProVerif é publicada como anotação da execução, e a saída completa fica no artefato `proverif-results`. O workflow exige o resultado esperado de cada consulta, em cada modelo: as quatro consultas de correspondência e a de sigilo no modelo principal; as quatro falsas no controle (i); as duas de P2 falsas e as de P1 e P4 verdadeiras no controle (ii). Antes da verificação, uma etapa de correspondência confere se `hsl/hsl_auth_v1.py` é a versão registrada na seção 11; se o código mudar, o workflow falha até que esta especificação seja revista. O workflow também roda em alterações na `main`, na especificação, nos modelos e no código de referência.
+Arquivos: [`formal/proverif/`](../../formal/proverif/). A execução ocorre no GitHub Actions (workflow não obrigatório para merge), em [`.github/workflows/formal.yml`](../../.github/workflows/formal.yml). Cada linha de resultado do ProVerif é publicada como anotação da execução, e a saída completa fica no artefato `proverif-results`. O workflow compara a saída de cada modelo, linha a linha, com um gabarito versionado em [`formal/proverif/expected/`](../../formal/proverif/expected/): o conjunto exato de consultas e o resultado de cada uma. Qualquer consulta adicional, ausente, duplicada ou com resultado diferente faz o workflow falhar. Antes da verificação, uma etapa de correspondência confere se `hsl/hsl_auth_v1.py` é a versão registrada na seção 11; se o código mudar, o workflow falha até que esta especificação seja revista. O workflow também roda em alterações na `main`, na especificação, nos modelos e no código de referência.
 
 **Consultas do modelo principal.** São cinco consultas, não cinco propriedades independentes:
 - duas consultas de correspondência injetiva para P1 (pares A→B e B→A);
@@ -385,7 +385,7 @@ O ProVerif analisa o modelo, não o código Python. A validade das conclusões p
 | Serialização em bytes, prefixos de comprimento, decodificação | Abstraído. A tupla simbólica pressupõe codificação injetiva, garantida pelos prefixos de comprimento (seção 6.3) | Testes de implementação `test_f06_*` (ida e volta, bytes truncados e excedentes, tipo errado) |
 | Contexto `f0` e `base` | Representado como constantes **globais**: o modelo não contempla nós com configurações diferentes, e a concordância sobre o contexto vale apenas nesse cenário | Teste `test_wrong_context_f0_is_rejected` cobre a divergência de `f0` na implementação; modelar contexto por participante fica para evolução do modelo |
 | Separação de domínio pelos rótulos | Representado (constantes distintas) | Modelo; seção 2 (rótulos prefix-distintos) |
-| HMAC-SHA-256 | Abstraído pela premissa C1 (função ideal sem inversa) | Premissa; `test_f02_*` confirma o uso de HMAC com chave |
+| HMAC-SHA-256 | Abstraído como MAC simbólico, sem equações nem destrutor (premissa C1) | Premissa; `test_f02_*` confirma o uso de HMAC com chave |
 | Truncamento do `sid` a 16 bytes | Representado como função opaca `trunc16` | Modelo; colisões de 128 bits desconsideradas por premissa |
 | Frescor dos nonces | Representado (nomes novos a cada execução) | Modelo; premissa A5 |
 | Carimbo de tempo e janela `W` | Abstraído: `tA` é valor público novo; a janela não é modelada | Testes `test_stale_challenge_is_rejected`, `test_expired_pending_challenge_is_rejected` |
