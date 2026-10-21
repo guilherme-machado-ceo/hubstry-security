@@ -15,7 +15,7 @@ As palavras **DEVE**, **NÃO DEVE** e **PODE** têm sentido normativo, no estilo
 
 O HSL Auth v1 é um protocolo de **autenticação mútua** entre dois nós que compartilham uma chave secreta prévia (PSK, *Pre-Shared Key*). Em três mensagens, cada nó obtém evidência de que o outro conhece a PSK e participou da mesma execução do protocolo, com os mesmos identificadores, nonces e contexto.
 
-**O protocolo garante, sob as premissas da seção 4:** as propriedades P1 a P4 da seção 9.
+**Propriedades pretendidas:** sob as premissas da seção 4, o protocolo visa às propriedades P1 a P4 da seção 9. A evidência formal disponível vale para o modelo simbólico e para as abstrações descritas na seção 12; não constitui verificação do código nem prova computacional (seção 12.5).
 
 **O protocolo não estabelece chave de sessão.** O valor `session_id` produzido ao final é um identificador local de correlação. Nesta versão ele não é designado como chave criptográfica e NÃO DEVE ser usado para cifrar ou autenticar dados da aplicação (ver seção 10, item H-3).
 
@@ -209,6 +209,7 @@ procedure INITIATE(peer):
 
 procedure RESPOND(C):
     EXPIRE()
+    require len(C.nA) = 32
     CHECK_PEER(C.idA, C.slotA)
     if |now() − C.tA| > W: reject
     if (C.idA, C.nA) ∈ seen: reject            // repetição
@@ -224,6 +225,7 @@ procedure FINISH(R):                           // iniciador
     (C, peer, _) ← pend_I.remove(R.nA)  or reject   // ver H-1
     if R.idB ≠ peer: reject
     CHECK_PEER(R.idB, R.slotB)
+    require len(R.nB) = 32
     T ← TRANSCRIPT(C, R.idB, R.slotB, R.nB)
     if not ConstEq(MAC(K, L_RESP ‖ T), R.tagB): reject
     U ← T ‖ lp(R.tagB)
@@ -262,12 +264,12 @@ O atacante **não** quebra as primitivas criptográficas (premissas C1 e C2 abai
 
 Para definir as propriedades, cada execução registra eventos:
 
-- `BeginI(A, B, X)`: A, como iniciador, envia a mensagem 3 sobre os dados `X`.
-- `AcceptI(A, B, X)`: A aceita B como respondente, em `FINISH`.
-- `BeginR(B, A, X)`: B, como respondente, envia a mensagem 2.
-- `AcceptR(B, A, X)`: B aceita A como iniciador, em `COMPLETE`.
+- `BeginI(A, B, X, sid)`: A, como iniciador, envia a mensagem 3 sobre os dados `X`.
+- `AcceptI(A, B, X, sid)`: A aceita B como respondente, em `FINISH`.
+- `BeginR(B, A, X, sid)`: B, como respondente, envia a mensagem 2.
+- `AcceptR(B, A, X, sid)`: B aceita A como iniciador, em `COMPLETE`.
 
-Aqui `X = (f0, base, idA, slotA, nA, tA, idB, slotB, nB)` é o conteúdo do transcript `T`.
+Aqui `X = (f0, base, idA, slotA, nA, tA, idB, slotB, nB)` é o conteúdo do transcript `T`, e `sid` é o identificador de sessão derivado na seção 6.4. Os eventos do modelo ProVerif carregam o mesmo par `(T, sid)`.
 
 ### 9.4 Propriedades pretendidas
 
@@ -276,7 +278,7 @@ Aqui `X = (f0, base, idA, slotA, nA, tA, idB, slotB, nB)` é o conteúdo do tran
 | **P1** | Autenticação do respondente (acordo injetivo) | Se A executa `AcceptI(A, B, X)` e `K` não foi comprometida, então B executou `BeginR(B, A, X)` antes, e a cada `AcceptI` corresponde um `BeginR` distinto. |
 | **P2** | Autenticação do iniciador (acordo injetivo) | Se B executa `AcceptR(B, A, X)` e `K` não foi comprometida, então A executou `BeginI(A, B, X)` antes, e a cada `AcceptR` corresponde um `BeginI` distinto. |
 | **P3** | Vinculação da sessão | Quando A e B aceitam a mesma execução, concordam sobre os identificadores, as fases, os dois nonces, o carimbo de tempo, o contexto (`f0`, `base`) e o `sid`. Na verificação simbólica, o contexto é global (ver 12.4); a rejeição entre nós com contextos divergentes é sustentada por teste, não pelo modelo. |
-| **P4** | Sigilo da PSK | O atacante não obtém `K` a partir das execuções do protocolo. |
+| **P4** | Sigilo da PSK | O atacante não obtém `K` a partir das execuções do protocolo. No modelo simbólico, esta propriedade decorre diretamente da modelagem do HMAC como função ideal sem inversa (premissa C1) e do fato de `K` nunca ser transmitida; a consulta correspondente funciona como verificação de sanidade do modelo, não como resultado independente. |
 
 O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *dentro* do modelo: uma mensagem antiga reenviada não produz uma segunda aceitação.
 
@@ -284,7 +286,7 @@ O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *
 
 - **Sigilo futuro (*forward secrecy*):** o comprometimento de `K` compromete as execuções passadas e futuras.
 - **Chave de sessão:** o protocolo não estabelece chave para proteger dados.
-- **Disponibilidade:** o atacante pode impedir a conclusão de execuções (ver H-1). Isso é inevitável no modelo Dolev-Yao, mas H-1 torna essa interrupção mais barata.
+- **Disponibilidade:** o atacante pode impedir a conclusão de execuções (ver H-1). Isso é inevitável no modelo Dolev-Yao, mas H-1 torna essa interrupção mais barata. Além disso, a mensagem 1 não é autenticada por desenho: cada desafio bem formado com identificador de par válido faz o respondente calcular um HMAC e criar estado (ver H-7).
 - **Repetição após reinício:** o registro `seen` é volátil.
 - **Autenticação entre nós que compartilham a mesma PSK:** fora da premissa A2.
 - **Resistência quântica:** HMAC-SHA-256 com chave de 256 bits é considerado robusto contra os ataques quânticos conhecidos, mas esta especificação não reivindica propriedade pós-quântica.
@@ -296,10 +298,13 @@ O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *
 
 | ID | Achado | Efeito | Encaminhamento |
 |---|---|---|---|
-| **H-1** | `FINISH` e `COMPLETE` removem o estado pendente **antes** de verificar a tag (linhas 432 e 459 da implementação). | Quem observa a rede pode enviar uma Response ou Verify falsa com o nonce correto e cancelar uma execução legítima. Reproduzido: após uma Response com tag falsa, a Response legítima é rejeitada com "no pending challenge". Não permite falsificar autenticação (P1–P4 não são afetadas); é uma falha de disponibilidade. | Corrigir em micro-sprint próprio: verificar antes de remover o estado. |
+| **H-1** | `FINISH` e `COMPLETE` removem o estado pendente **antes** de concluir as verificações (linhas 432 e 459 da implementação). Em `FINISH`, a remoção precede também a conferência do par esperado, `check_peer` e o tamanho de `nB` (linhas 436–439), além da tag. | Quem observa a rede vê `nA` na mensagem 1 e `nB` na mensagem 2 e pode enviar uma Response ou Verify falsa antes da legítima, cancelando a execução. Evidência: reprodução por execução avulsa em 2026-10-21, fora da suíte de testes (após uma Response com tag falsa, a Response legítima foi rejeitada com "no pending challenge"); o teste de regressão será incluído com a correção. Não permite falsificar autenticação (P1–P4 não são afetadas); é uma falha de disponibilidade. | Corrigir em micro-sprint próprio: verificar antes de remover o estado. |
 | **H-2** | O motor recebe uma única PSK por instância, para todos os pares. | A premissa A2 (PSK por par) só é atendida se a implantação usar uma instância por par. | Registrar como requisito de implantação; considerar na v1.1 um mapa `par → PSK`. |
 | **H-3** | `sid` é derivado como um valor pseudoaleatório, mas tem só 16 bytes, é chamado de identificador e não passa por função de derivação de chaves. | Não deve ser usado como chave. | Para estabelecer chave de sessão, definir derivação dedicada (por exemplo HKDF-SHA-256, RFC 5869) em versão futura, com prova própria. |
 | **H-4** | O iniciador não verifica o carimbo de tempo da própria execução além da expiração de `pend_I`. | Sem efeito em P1–P4; a expiração em `W` limita a validade. | Nenhum, salvo decisão de projeto. |
+| **H-5** | Borda temporal da proteção contra repetição: a janela de aceitação é inclusiva (`|agora − tA| ≤ W`), e a entrada em `seen` expira de forma estrita em `recebimento + 2W`. No instante limite, um desafio ainda aceito pode já não constar de `seen`. | Janela mínima de repetição na fronteira; sem efeito em P1–P4. Identificado por leitura do código; não reproduzido. | Tratar com a correção de H-1, com teste de regressão. |
+| **H-6** | A configuração não é validada: `base` = 0 provoca divisão por zero e `base` > 65535 provoca erro de serialização, em vez de `HSLAuthError`; `f0` não finito (NaN) ou `-0.0` gera codificações distintas para valores numericamente "iguais". | Sem efeito com a configuração padrão. Identificado por leitura do código. | Validar `base` (1 a 65535) e `f0` (finito, positivo) na criação da configuração. |
+| **H-7** | O respondente cria estado (`pend_R` por `W`, `seen` por `2W`) e calcula um HMAC para cada desafio bem formado, antes de qualquer autenticação; `EXPIRE` reconstrói as estruturas a cada chamada. | Consumo de memória e processamento por quem conheça um identificador de par válido. Disponibilidade não é reivindicada (9.5). | Avaliar limites de estado e de taxa em versão futura. |
 
 ---
 
@@ -318,6 +323,8 @@ O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *
 | `INITIATE`, `RESPOND`, `FINISH`, `COMPLETE` | linhas 385–467 |
 | Testes | [`tests/test_hsl_auth_v1.py`](../../tests/test_hsl_auth_v1.py) (32 testes) |
 
+**Implementação de referência desta especificação:** SHA-256 de `hsl/hsl_auth_v1.py` = `dba58ff7b31d5638cde6c180040fdf64cf15130d403436f0815922696ff0b667`. O workflow `formal` compara esse valor com o arquivo atual e falha se o código mudar sem que esta especificação (incluindo os números de linha acima) seja revista e o valor atualizado.
+
 ---
 
 ## 12. Verificação formal simbólica (ProVerif)
@@ -331,7 +338,7 @@ As propriedades P1 a P4 foram verificadas com o **ProVerif 2.05**, verificador a
   - (i) a mesma PSK compartilhada com C, violando A2;
   - (ii) o respondente deixa de verificar a mensagem 3 (regressão do achado F-05 da auditoria).
 
-Arquivos: [`formal/proverif/`](../../formal/proverif/). A execução ocorre no GitHub Actions, em [`.github/workflows/formal.yml`](../../.github/workflows/formal.yml). Cada linha de resultado do ProVerif é publicada como anotação da execução, e a saída completa fica no artefato `proverif-results`.
+Arquivos: [`formal/proverif/`](../../formal/proverif/). A execução ocorre no GitHub Actions, em [`.github/workflows/formal.yml`](../../.github/workflows/formal.yml). Cada linha de resultado do ProVerif é publicada como anotação da execução, e a saída completa fica no artefato `proverif-results`. O workflow exige o resultado esperado de cada consulta, em cada modelo: as quatro consultas de correspondência e a de sigilo no modelo principal; as quatro falsas no controle (i); as duas de P2 falsas e as de P1 e P4 verdadeiras no controle (ii). Antes da verificação, uma etapa de correspondência confere se `hsl/hsl_auth_v1.py` é a versão registrada na seção 11; se o código mudar, o workflow falha até que esta especificação seja revista. O workflow também roda em alterações na `main`, na especificação, nos modelos e no código de referência.
 
 **Consultas do modelo principal.** São cinco consultas, não cinco propriedades independentes:
 - duas consultas de correspondência injetiva para P1 (pares A→B e B→A);
@@ -352,6 +359,7 @@ Execução de referência: workflow `formal`, run `39574886321`, commit `ce211b0
 | Principal | `inj-event(AcceptR(A,B,t,s)) ==> inj-event(BeginI(B,A,t,s))` (P2) | verdadeiro | verdadeiro |
 | Principal | `not attacker(kab)` (P4) | verdadeiro | verdadeiro |
 | Controle (i) | as quatro consultas de P1 e P2, inclusive na forma não injetiva | falso (ataque encontrado) | falso |
+| Controle (i) | consulta de P4 | ausente | — (a chave é pública neste controle) |
 | Controle (ii) | as duas consultas de P2, inclusive na forma não injetiva | falso (ataque encontrado) | falso |
 | Controle (ii) | as duas consultas de P1 e a de P4 | verdadeiro | verdadeiro |
 
@@ -363,7 +371,7 @@ O controle (ii) mostra que o modelo discrimina as propriedades: remover a verifi
 |---|---|
 | Verificador | ProVerif 2.05 (Blanchet, Cheval e Sylvestre), compilado no runner a partir do pacote-fonte oficial |
 | SHA-256 do pacote-fonte | `4871f53c32ab4a04669a060c4886ba5d9080496963fb980a9a62d2c429ceabc4` |
-| Fixação | A partir do commit seguinte ao run de referência, o workflow rejeita qualquer pacote com outro hash |
+| Fixação | Desde o commit `20e21ec`, anterior ao run de referência, o workflow rejeita qualquer pacote com outro hash; o run de referência foi conferido contra esse valor |
 
 **Limite da fixação:** o hash foi obtido na primeira observação do pacote oficial (modelo *trust on first use*). Ele garante que execuções futuras usem o mesmo pacote, mas não substitui uma conferência contra soma publicada pelos autores ou contra uma distribuição independente. Essa conferência está pendente.
 
@@ -385,13 +393,13 @@ O ProVerif analisa o modelo, não o código Python. A validade das conclusões p
 | Ordem de consumo do estado (H-1) | Fora do modelo | Achado H-1, reproduzido; correção em micro-sprint separado |
 | Registro `seen` contra repetição | Fora do modelo. No modelo, a resistência a repetição decorre da correspondência injetiva com nonces frescos | Testes `test_f08_*` |
 | Expiração, reinício de processo, concorrência entre threads | Fora do escopo | Declarado na seção 9.5 |
-| `check_peer` (identificador próprio, registro, fase) | Representado (`idA <> me`, tabela de chaves, `slot`) | Modelo; testes `test_f04_*`, `test_reflection_*` |
-| PSK exclusiva por par (A2) | Representado como tabela de chaves por par | Modelo; controle (i) mostra que a premissa é necessária |
+| `check_peer` (identificador próprio, registro, fase) | Representado (`idA <> me`, tabela de chaves, `slot`), **com ressalva**: no modelo a tabela de chaves é por par e sempre obrigatória; no código o registro `peers` é opcional e há uma única PSK por instância (H-2). A correspondência vale para implantações com uma instância do motor por par | Modelo; testes `test_f04_*`, `test_reflection_*` |
+| PSK exclusiva por par (A2) | Representado como tabela de chaves por par | Modelo. O controle (i) torna a chave do par conhecida do atacante e mostra que, nesse caso, P1 e P2 deixam de valer; ele não modela um terceiro nó legítimo que compartilhe a mesma PSK |
 | Comparação em tempo constante | Fora do escopo | Premissa A6 |
 
 ### 12.5 O que a verificação sustenta e o que não sustenta
 
-**Sustenta:** no modelo simbólico, sob as premissas A1–A6 e C1–C2, nenhum atacante que controle a rede consegue fazer um nó honesto aceitar uma execução que o outro nó honesto não realizou com os mesmos dados (P1, P2 e P3), nem obter a PSK do par (P4).
+**Sustenta:** no modelo simbólico, sob as premissas A1–A6 e C1–C2, nenhum atacante que controle a rede consegue fazer um nó honesto aceitar uma execução que o outro nó honesto não realizou com os mesmos dados (P1, P2 e P3), e o sigilo da PSK (P4) se mantém, como consequência direta da modelagem do HMAC (premissa C1).
 
 **Não sustenta:**
 - que o código Python inteiro esteja formalmente verificado. A correspondência é estabelecida por revisão (seções 11 e 12.4) e por testes, não por extração automática;

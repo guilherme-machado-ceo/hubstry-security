@@ -6,10 +6,10 @@ name: formal
 
 on:
   push:
-    branches: [spec/hsl-auth-v1-formal]
-    paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", ".github/workflows/formal.yml"]
+    branches: [main, spec/hsl-auth-v1-formal]
+    paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", "hsl/hsl_auth_v1.py", ".github/workflows/formal.yml"]
   pull_request:
-    paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", ".github/workflows/formal.yml"]
+    paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", "hsl/hsl_auth_v1.py", ".github/workflows/formal.yml"]
   workflow_dispatch:
 
 permissions:
@@ -33,6 +33,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: "Correspondence guard: implementation matches the specified version"
+        run: |
+          expected=$(grep -oE 'SHA-256 de `hsl/hsl_auth_v1.py` = `[0-9a-f]{64}`' docs/specs/hsl-auth-v1-spec.md | grep -oE '[0-9a-f]{64}')
+          actual=$(sha256sum hsl/hsl_auth_v1.py | cut -d' ' -f1)
+          echo "::notice title=implementation-sha256::expected $expected; actual $actual"
+          test -n "$expected"
+          if [ "$expected" != "$actual" ]; then
+            echo "::error::hsl/hsl_auth_v1.py changed: revise docs/specs/hsl-auth-v1-spec.md (sections 8, 11, 12.4) and update the recorded SHA-256"
+            exit 1
+          fi
+
       - name: Install ProVerif from the official source tarball
         run: |
           sudo apt-get update -q
@@ -53,20 +64,26 @@ jobs:
           mkdir -p out
           proverif formal/proverif/hsl_auth_v1.pv | tee out/main.txt
           grep '^RESULT' out/main.txt | while IFS= read -r l; do echo "::notice title=main::$l"; done
-          test "$(grep -c '^RESULT .* is true\.$' out/main.txt)" -eq 5
-          ! grep -E '^RESULT .* (is false|cannot be proved)' out/main.txt
+          test "$(grep -c '^RESULT inj-event(AcceptI(.* is true\.$' out/main.txt)" -eq 2
+          test "$(grep -c '^RESULT inj-event(AcceptR(.* is true\.$' out/main.txt)" -eq 2
+          test "$(grep -c '^RESULT not attacker(kab\[\]) is true\.$' out/main.txt)" -eq 1
+          test "$(grep -c '^RESULT' out/main.txt)" -eq 5
 
-      - name: "Control (i) PSK shared with attacker node: attack found"
+      - name: "Control (i) attacker knows the pair PSK: all 4 P1/P2 queries false"
         run: |
           proverif formal/proverif/control_shared_psk.pv | tee out/control_shared_psk.txt
           grep '^RESULT' out/control_shared_psk.txt | while IFS= read -r l; do echo "::notice title=control-shared-psk::$l"; done
-          grep -q '^RESULT .* is false\.$' out/control_shared_psk.txt
+          test "$(grep -c '^RESULT inj-event(Accept[IR](.* is false\.$' out/control_shared_psk.txt)" -eq 4
+          ! grep -E '^RESULT .* (is true|cannot be proved)' out/control_shared_psk.txt
 
-      - name: "Control (ii) step 3 not verified: attack on P2 found"
+      - name: "Control (ii) step 3 not verified: P2 false (2), P1 true (2), P4 true"
         run: |
           proverif formal/proverif/control_no_verify.pv | tee out/control_no_verify.txt
           grep '^RESULT' out/control_no_verify.txt | while IFS= read -r l; do echo "::notice title=control-no-verify::$l"; done
-          grep -q '^RESULT inj-event(AcceptR.* is false\.$' out/control_no_verify.txt
+          test "$(grep -c '^RESULT inj-event(AcceptR(.* is false\.$' out/control_no_verify.txt)" -eq 2
+          test "$(grep -c '^RESULT inj-event(AcceptI(.* is true\.$' out/control_no_verify.txt)" -eq 2
+          test "$(grep -c '^RESULT not attacker(kab\[\]) is true\.$' out/control_no_verify.txt)" -eq 1
+          ! grep -E '^RESULT .* cannot be proved' out/control_no_verify.txt
 
       - name: Record environment
         if: always()
