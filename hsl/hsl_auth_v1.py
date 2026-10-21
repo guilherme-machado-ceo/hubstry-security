@@ -36,7 +36,11 @@ Assumptions and limitations (normative)
   Key distribution is out of scope.
 - Replay detection is implemented for the lifetime of an engine instance,
   within the configured timestamp window. It does not survive a process
-  restart and is not shared across instances.
+  restart and is not shared across instances. A challenge identifier is
+  retained until the last instant at which its timestamp is still accepted.
+- Pending state is consumed only after a message passes every check, so an
+  invalid message cannot cancel a legitimate handshake. Engine methods are
+  serialized by an internal lock.
 - No forward secrecy: compromise of the PSK exposes the authenticity of
   past and future sessions under that key.
 - No post-quantum signature is used. ML-DSA integration (audit finding
@@ -54,8 +58,11 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import math
+import numbers
 import secrets
 import struct
+import threading
 import time
 from dataclasses import dataclass, field
 from typing import Callable, Optional
@@ -286,13 +293,39 @@ class Session:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(frozen=True)
 class HSLAuthConfig:
-    """Protocol context. f0 and base are public parameters, not secrets."""
+    """Protocol context. f0 and base are public parameters, not secrets.
+
+    Immutable and validated on creation: f0 must be a finite, positive real
+    number; base an integer in 1..65535 (phase slots are encoded as u16);
+    timestamp_window a finite, positive real number of seconds.
+    """
 
     f0: float = 440.0
     base: int = 12
     timestamp_window: int = 60
+
+    def __post_init__(self) -> None:
+        _check_positive_real("f0", self.f0)
+        if (
+            isinstance(self.base, bool)
+            or not isinstance(self.base, numbers.Integral)
+            or not 1 <= self.base <= 0xFFFF
+        ):
+            raise HSLAuthError("base must be an integer in 1..65535")
+        _check_positive_real("timestamp_window", self.timestamp_window)
+
+
+def _check_positive_real(name: str, value: object) -> None:
+    if isinstance(value, bool) or not isinstance(value, numbers.Real):
+        raise HSLAuthError(f"{name} must be a real number")
+    try:
+        as_float = float(value)
+    except (OverflowError, ValueError) as exc:
+        raise HSLAuthError(f"{name} must be finite") from exc
+    if not math.isfinite(as_float) or as_float <= 0:
+        raise HSLAuthError(f"{name} must be finite and positive")
 
 
 class HSLAuthEngine:
@@ -323,11 +356,14 @@ class HSLAuthEngine:
         self.node_id = node_id
         self._psk = bytes(psk)
         self.config = config or HSLAuthConfig()
-        self.peers = set(peers) if peers is not None else None
+        self.peers = frozenset(peers) if peers is not None else None
         self._clock = clock
         self._pending_initiator: dict[bytes, tuple[Challenge, str, float]] = {}
         self._pending_responder: dict[bytes, tuple[bytes, float, str]] = {}
         self._seen: dict[tuple[str, bytes], float] = {}
+        # Reentrant lock: safe even if an injected clock or a future helper
+        # calls back into the engine; the cost over a plain Lock is negligible.
+        self._lock = threading.RLock()
 
     def __repr__(self) -> str:
         return f"HSLAuthEngine(node_id={self.node_id!r}, config={self.config!r})"
@@ -372,7 +408,7 @@ class HSLAuthEngine:
     def _expire(self) -> None:
         now = self._now()
         window = self.config.timestamp_window
-        self._seen = {k: exp for k, exp in self._seen.items() if exp > now}
+        self._seen = {k: exp for k, exp in self._seen.items() if exp >= now}
         self._pending_initiator = {
             k: v for k, v in self._pending_initiator.items() if now - v[2] <= window
         }
@@ -384,6 +420,10 @@ class HSLAuthEngine:
 
     def initiate(self, peer_id: str) -> Challenge:
         """Step 1: create a challenge addressed to ``peer_id``."""
+        with self._lock:
+            return self._initiate(peer_id)
+
+    def _initiate(self, peer_id: str) -> Challenge:
         _encode_id(peer_id)
         if peer_id == self.node_id:
             raise HSLAuthError("cannot initiate a handshake with itself")
@@ -399,6 +439,10 @@ class HSLAuthEngine:
 
     def respond(self, challenge: Challenge) -> Response:
         """Step 2: validate a challenge and return an authenticated response."""
+        with self._lock:
+            return self._respond(challenge)
+
+    def _respond(self, challenge: Challenge) -> Response:
         self._expire()
         _check_len("nonce_a", challenge.nonce_a, NONCE_LEN)
         self._check_peer(challenge.initiator_id, challenge.phase_slot)
@@ -408,7 +452,9 @@ class HSLAuthEngine:
         key = (challenge.initiator_id, challenge.nonce_a)
         if key in self._seen:
             raise HSLAuthError("replayed challenge")
-        self._seen[key] = now + 2 * self.config.timestamp_window
+        # Retain the identifier until the last instant at which this
+        # timestamp is still inside the acceptance window (H-5).
+        self._seen[key] = challenge.timestamp + self.config.timestamp_window
 
         nonce_b = secrets.token_bytes(NONCE_LEN)
         transcript = self._transcript(challenge, (self.node_id, self.phase_slot, nonce_b))
@@ -428,8 +474,14 @@ class HSLAuthEngine:
 
     def finish(self, response: Response) -> tuple[Verify, Session]:
         """Step 3 (initiator): verify the response and produce the verify message."""
+        with self._lock:
+            return self._finish(response)
+
+    def _finish(self, response: Response) -> tuple[Verify, Session]:
         self._expire()
-        pending = self._pending_initiator.pop(response.nonce_a, None)
+        # Look up without consuming: the pending challenge is removed only
+        # after every check below has passed (H-1).
+        pending = self._pending_initiator.get(response.nonce_a)
         if pending is None:
             raise HSLAuthError("no pending challenge for this response")
         challenge, expected_peer, _created = pending
@@ -444,6 +496,7 @@ class HSLAuthEngine:
         expected_tag_b = self._mac(LABEL_RESPONSE, transcript)
         if not hmac.compare_digest(expected_tag_b, response.tag_b):
             raise HSLAuthError("response authentication failed")
+        del self._pending_initiator[response.nonce_a]
 
         bound = transcript + _lp(response.tag_b)
         tag_a = self._mac(LABEL_VERIFY, bound)
@@ -455,14 +508,20 @@ class HSLAuthEngine:
 
     def complete(self, verify: Verify) -> Session:
         """Step 3 (responder): verify the initiator's final message."""
+        with self._lock:
+            return self._complete(verify)
+
+    def _complete(self, verify: Verify) -> Session:
         self._expire()
-        pending = self._pending_responder.pop(verify.nonce_b, None)
+        # Look up without consuming (H-1).
+        pending = self._pending_responder.get(verify.nonce_b)
         if pending is None:
             raise HSLAuthError("no pending session for this verify message")
         bound, _created, initiator_id = pending
         expected_tag_a = self._mac(LABEL_VERIFY, bound)
         if not hmac.compare_digest(expected_tag_a, verify.tag_a):
             raise HSLAuthError("verify authentication failed")
+        del self._pending_responder[verify.nonce_b]
         session_id = self._mac(LABEL_SESSION, bound)[:SESSION_ID_LEN]
         return Session(peer_id=initiator_id, role="responder", session_id=session_id)
 

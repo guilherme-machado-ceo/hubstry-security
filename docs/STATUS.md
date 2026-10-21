@@ -30,7 +30,7 @@ This file is the canonical technical status ledger for the public project overvi
 ## Escopo atual do provedor PQC e do HSL Auth v1
 
 - O provedor PQC ainda não é usado por nenhum fluxo da plataforma, incluindo o handshake HSL. Não é uma implementação criptograficamente validada. Ver [`post-quantum/README.md`](../post-quantum/README.md).
-- O HSL Auth v1 corrige, nesta implementação experimental, os achados F-02 a F-09 da auditoria, com 32 testes; não há revisão criptográfica externa. Não usa assinatura pós-quântica: a integração de ML-DSA ao handshake (F-01b) está pendente. Relatório: [`research/hsl-v1-execution-report-2026-10.md`](research/hsl-v1-execution-report-2026-10.md).
+- O HSL Auth v1 corrige, nesta implementação experimental, os achados F-02 a F-09 da auditoria, com 32 testes; os achados H-1, H-5 e H-6 da especificação formal foram corrigidos depois, com 30 testes adicionais (62 no total); não há revisão criptográfica externa. Não usa assinatura pós-quântica: a integração de ML-DSA ao handshake (F-01b) está pendente. Relatório: [`research/hsl-v1-execution-report-2026-10.md`](research/hsl-v1-execution-report-2026-10.md).
 
 ## Registros históricos preservados
 

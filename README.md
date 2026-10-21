@@ -32,7 +32,7 @@ From HALE came the **HSL** (Harmonic Security Layer) research line: an authentic
 | Verified project result | Evidence |
 |---|---|
 | Experimental provider for the three NIST (National Institute of Standards and Technology) post-quantum standards: ML-KEM-768 (key establishment, FIPS 203), ML-DSA-65 (signatures, FIPS 204) and SLH-DSA-SHA2-128s (hash-based signatures, FIPS 205), on the open-source liboqs 0.16.0 library, with 19 tests independently reproduced | [PQC reproduction report](docs/research/pr5-pqc-reproduction-report-2026-10.md) |
-| HSL Auth v1, an experimental three-message handshake using a PSK (pre-shared key) and HMAC-SHA-256 (keyed message authentication), with 32 tests; mutation testing detected 5 of 5 deliberately introduced defects | [HSL v1 execution report](docs/research/hsl-v1-execution-report-2026-10.md) |
+| HSL Auth v1, an experimental three-message handshake using a PSK (pre-shared key) and HMAC-SHA-256 (keyed message authentication), with 62 tests (the original 32-test suite detected 5 of 5 deliberately introduced defects; 30 tests cover the fixes to findings H-1, H-5 and H-6) | [HSL v1 execution report](docs/research/hsl-v1-execution-report-2026-10.md) |
 | Quantum-research track (harmonic phase encodings and a 64-profile lattice on 6 qubits), with 136 tests reproduced across three independent environments | [PR1 research record](docs/research/pr1-quantum-encoding.md) |
 | Catalog of 14 attack vectors mapped against ENISA (European Union Agency for Cybersecurity) 2025 and OWASP (Open Worldwide Application Security Project) 2025 | [attack-vectors/](attack-vectors/) |
 | Regulatory mapping for NIS2 (EU network and information security directive), LGPD (Brazil's General Data Protection Law), NIST CSF 2.0 (Cybersecurity Framework) and ISO/IEC 27001, with an incident-response playbook | [compliance/](compliance/) |
@@ -139,7 +139,7 @@ Contact: **guilhermemachado.ceo@hubstry.dev**
 
 A **Hubstry Security Platform** prepara sistemas para a migração à criptografia pós-quântica, com desenvolvimento orientado a evidência. Origina-se do **HALE** (Harmonic Addressing & Labeling Equation), framework matemático da Hubstry Deep Tech desenvolvido desde 2023, do qual nasceu a linha de pesquisa **HSL** (Harmonic Security Layer, camada de segurança harmônica).
 
-Resultados verificados: provedor experimental com os três padrões pós-quânticos do NIST (ML-KEM-768, ML-DSA-65 e SLH-DSA), com 19 testes reproduzidos de forma independente; handshake HSL Auth v1 com 32 testes; trilha de pesquisa quântica com 136 testes em três ambientes; catálogo de 14 vetores de ataque; e mapeamento regulatório (NIS2, LGPD, NIST CSF 2.0, ISO/IEC 27001). Três verificações automáticas são obrigatórias antes de qualquer alteração entrar na versão principal.
+Resultados verificados: provedor experimental com os três padrões pós-quânticos do NIST (ML-KEM-768, ML-DSA-65 e SLH-DSA), com 19 testes reproduzidos de forma independente; handshake HSL Auth v1 com 62 testes; trilha de pesquisa quântica com 136 testes em três ambientes; catálogo de 14 vetores de ataque; e mapeamento regulatório (NIS2, LGPD, NIST CSF 2.0, ISO/IEC 27001). Três verificações automáticas são obrigatórias antes de qualquer alteração entrar na versão principal.
 
 Parcerias de pesquisa e validação: **guilhermemachado.ceo@hubstry.dev**.
 
