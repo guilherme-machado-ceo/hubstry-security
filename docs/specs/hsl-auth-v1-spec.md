@@ -172,9 +172,9 @@ sid  = MAC(K, L_SESS ‖ U)[0 .. 16)
 |---|---|---|
 | `pend_I[nA]` | `(desafio, par esperado, instante de criação)` | `W` segundos após a criação |
 | `pend_R[nB]` | `(U, instante de criação, idA)` | `W` segundos após a criação |
-| `seen[(idA, nA)]` | instante de expiração | `2W` segundos após o recebimento |
+| `seen[(idA, nA)]` | instante de expiração `tA + W` | Até o último instante em que `tA` ainda é aceito pela janela (inclusive) |
 
-Esse estado é volátil: vive enquanto a instância do motor estiver ativa e não é compartilhado entre instâncias.
+Esse estado é volátil: vive enquanto a instância do motor estiver ativa e não é compartilhado entre instâncias. As operações de uma instância são serializadas por uma trava interna, e o estado pendente só é consumido depois que a mensagem passa por todas as verificações.
 
 ### 7.2 Máquina de estados por execução
 
@@ -213,7 +213,7 @@ procedure RESPOND(C):
     CHECK_PEER(C.idA, C.slotA)
     if |now() − C.tA| > W: reject
     if (C.idA, C.nA) ∈ seen: reject            // repetição
-    seen[(C.idA, C.nA)] ← now() + 2W
+    seen[(C.idA, C.nA)] ← C.tA + W
     nB ← Rand(32)
     T ← TRANSCRIPT(C, self.id, slot(self.id), nB)
     tagB ← MAC(K, L_RESP ‖ T)
@@ -222,24 +222,26 @@ procedure RESPOND(C):
 
 procedure FINISH(R):                           // iniciador
     EXPIRE()
-    (C, peer, _) ← pend_I.remove(R.nA)  or reject   // ver H-1
+    (C, peer, _) ← pend_I.lookup(R.nA)  or reject   // sem consumir (H-1)
     if R.idB ≠ peer: reject
     CHECK_PEER(R.idB, R.slotB)
     require len(R.nB) = 32
     T ← TRANSCRIPT(C, R.idB, R.slotB, R.nB)
     if not ConstEq(MAC(K, L_RESP ‖ T), R.tagB): reject
+    pend_I.remove(R.nA)                         // só após todas as verificações
     U ← T ‖ lp(R.tagB)
     accept(peer = R.idB, sid = MAC(K, L_SESS ‖ U)[0..16))
     return Verify(R.nB, MAC(K, L_VER ‖ U))
 
 procedure COMPLETE(V):                         // respondente
     EXPIRE()
-    (U, _, idA) ← pend_R.remove(V.nB)  or reject    // ver H-1
+    (U, _, idA) ← pend_R.lookup(V.nB)  or reject    // sem consumir (H-1)
     if not ConstEq(MAC(K, L_VER ‖ U), V.tagA): reject
+    pend_R.remove(V.nB)
     accept(peer = idA, sid = MAC(K, L_SESS ‖ U)[0..16))
 
 procedure EXPIRE():
-    remove de seen as entradas expiradas
+    remove de seen as entradas com instante de expiração anterior a now()
     remove de pend_I e pend_R as entradas com mais de W segundos
 ```
 
@@ -286,7 +288,7 @@ O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *
 
 - **Sigilo futuro (*forward secrecy*):** o comprometimento de `K` compromete as execuções passadas e futuras.
 - **Chave de sessão:** o protocolo não estabelece chave para proteger dados.
-- **Disponibilidade:** o atacante pode impedir a conclusão de execuções (ver H-1). Isso é inevitável no modelo Dolev-Yao, mas H-1 torna essa interrupção mais barata. Além disso, a mensagem 1 não é autenticada por desenho: cada desafio bem formado com identificador de par válido faz o respondente calcular um HMAC e criar estado (ver H-7).
+- **Disponibilidade:** o atacante pode impedir a conclusão de execuções (ver H-1). Isso é inevitável no modelo Dolev-Yao. Antes da correção de H-1, uma única mensagem falsa bastava para cancelar uma execução; após a correção, mensagens inválidas são rejeitadas sem afetar a execução legítima. Além disso, a mensagem 1 não é autenticada por desenho: cada desafio bem formado com identificador de par válido faz o respondente calcular um HMAC e criar estado (ver H-7).
 - **Repetição após reinício:** o registro `seen` é volátil.
 - **Autenticação entre nós que compartilham a mesma PSK:** fora da premissa A2.
 - **Resistência quântica:** HMAC-SHA-256 com chave de 256 bits é considerado robusto contra os ataques quânticos conhecidos, mas esta especificação não reivindica propriedade pós-quântica.
@@ -298,13 +300,13 @@ O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *
 
 | ID | Achado | Efeito | Encaminhamento |
 |---|---|---|---|
-| **H-1** | `FINISH` e `COMPLETE` removem o estado pendente **antes** de concluir as verificações (linhas 432 e 459 da implementação). Em `FINISH`, a remoção precede também a conferência do par esperado, `check_peer` e o tamanho de `nB` (linhas 436–439), além da tag. | Quem observa a rede vê `nA` na mensagem 1 e `nB` na mensagem 2 e pode enviar uma Response ou Verify falsa antes da legítima, cancelando a execução. Evidência: reprodução por execução avulsa em 2026-10-21, fora da suíte de testes (após uma Response com tag falsa, a Response legítima foi rejeitada com "no pending challenge"); o teste de regressão será incluído com a correção. Não permite falsificar autenticação (P1–P4 não são afetadas); é uma falha de disponibilidade. | Corrigir em micro-sprint próprio: verificar antes de remover o estado. |
+| **H-1** | `FINISH` e `COMPLETE` removem o estado pendente **antes** de concluir as verificações (linhas 432 e 459 da implementação anterior à correção, commit `e8f15f5`). Em `FINISH`, a remoção precedia também a conferência do par esperado, `check_peer` e o tamanho de `nB` (linhas 436–439 da mesma versão), além da tag. | Quem observa a rede vê `nA` na mensagem 1 e `nB` na mensagem 2 e pode enviar uma Response ou Verify falsa antes da legítima, cancelando a execução. Evidência: reprodução por execução avulsa em 2026-10-21, fora da suíte de testes (após uma Response com tag falsa, a Response legítima foi rejeitada com "no pending challenge"); o teste de regressão será incluído com a correção. Não permite falsificar autenticação (P1–P4 não são afetadas); é uma falha de disponibilidade. | **Corrigido** no micro-sprint seguinte: o estado é consultado sem ser consumido e só é removido após todas as verificações; testes `test_h1_*`. |
 | **H-2** | O motor recebe uma única PSK por instância, para todos os pares. | A premissa A2 (PSK por par) só é atendida se a implantação usar uma instância por par. | Registrar como requisito de implantação; considerar na v1.1 um mapa `par → PSK`. |
 | **H-3** | `sid` é derivado como um valor pseudoaleatório, mas tem só 16 bytes, é chamado de identificador e não passa por função de derivação de chaves. | Não deve ser usado como chave. | Para estabelecer chave de sessão, definir derivação dedicada (por exemplo HKDF-SHA-256, RFC 5869) em versão futura, com prova própria. |
 | **H-4** | O iniciador não verifica o carimbo de tempo da própria execução além da expiração de `pend_I`. | Sem efeito em P1–P4; a expiração em `W` limita a validade. | Nenhum, salvo decisão de projeto. |
-| **H-5** | Borda temporal da proteção contra repetição: a janela de aceitação é inclusiva (`|agora − tA| ≤ W`), e a entrada em `seen` expira de forma estrita em `recebimento + 2W`. No instante limite, um desafio ainda aceito pode já não constar de `seen`. | Janela mínima de repetição na fronteira; sem efeito em P1–P4. Identificado por leitura do código; não reproduzido. | Tratar com a correção de H-1, com teste de regressão. |
-| **H-6** | A configuração não é validada: `base` = 0 provoca divisão por zero e `base` > 65535 provoca erro de serialização, em vez de `HSLAuthError`; `f0` não finito (NaN) ou `-0.0` gera codificações distintas para valores numericamente "iguais". | Sem efeito com a configuração padrão. Identificado por leitura do código. | Validar `base` (1 a 65535) e `f0` (finito, positivo) na criação da configuração. |
-| **H-7** | O respondente cria estado (`pend_R` por `W`, `seen` por `2W`) e calcula um HMAC para cada desafio bem formado, antes de qualquer autenticação; `EXPIRE` reconstrói as estruturas a cada chamada. | Consumo de memória e processamento por quem conheça um identificador de par válido. Disponibilidade não é reivindicada (9.5). | Avaliar limites de estado e de taxa em versão futura. |
+| **H-5** | Borda temporal da proteção contra repetição: a janela de aceitação é inclusiva (`|agora − tA| ≤ W`), e a entrada em `seen` expira de forma estrita em `recebimento + 2W`. No instante limite, um desafio ainda aceito pode já não constar de `seen`. | Janela mínima de repetição na fronteira; sem efeito em P1–P4. Identificado por leitura do código; não reproduzido. | **Corrigido**: `seen` passa a reter o identificador até `tA + W`, com expiração inclusiva; teste `test_h5_replay_rejected_at_window_boundary`. |
+| **H-6** | A configuração não é validada: `base` = 0 provoca divisão por zero e `base` > 65535 provoca erro de serialização, em vez de `HSLAuthError`; `f0` não finito (NaN) ou `-0.0` gera codificações distintas para valores numericamente "iguais". | Sem efeito com a configuração padrão. Identificado por leitura do código. | **Corrigido**: a configuração valida `f0` (finito e positivo), `base` (inteiro de 1 a 65535) e `timestamp_window` (inteiro positivo); testes `test_h6_*`. |
+| **H-7** | O respondente cria estado (`pend_R` por `W`, `seen` até `tA + W`) e calcula um HMAC para cada desafio bem formado, antes de qualquer autenticação; `EXPIRE` reconstrói as estruturas a cada chamada. | Consumo de memória e processamento por quem conheça um identificador de par válido. Disponibilidade não é reivindicada (9.5). | Avaliar limites de estado e de taxa em versão futura. |
 
 ---
 
@@ -312,18 +314,19 @@ O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *
 
 | Elemento | Implementação (`hsl/hsl_auth_v1.py`) |
 |---|---|
-| Constantes e rótulos | linhas 63–78 |
-| `slot(id)` | `harmonic_phase_slot`, linhas 90–98 |
-| `lp(x)` | `_lp`, linhas 106–108 |
-| Decodificação e regras da seção 6.2 | `_Reader`, linhas 118–158 |
-| Mensagens 1–3 | `Challenge`, `Response`, `Verify`, linhas 180–269 |
-| `T` | `_transcript`, linhas 347–362 |
-| `check_peer` | `_check_peer`, linhas 364–370 |
-| `EXPIRE` | `_expire`, linhas 372–381 |
-| `INITIATE`, `RESPOND`, `FINISH`, `COMPLETE` | linhas 385–467 |
-| Testes | [`tests/test_hsl_auth_v1.py`](../../tests/test_hsl_auth_v1.py) (32 testes) |
+| Constantes e rótulos | linhas 69–84 |
+| `slot(id)` | `harmonic_phase_slot`, linhas 96–104 |
+| `lp(x)` | `_lp`, linhas 112–114 |
+| Decodificação e regras da seção 6.2 | `_Reader`, linhas 124–164 |
+| Mensagens 1–3 | `Challenge`, `Response`, `Verify`, linhas 186–275 |
+| Validação da configuração (H-6) | `HSLAuthConfig.__post_init__`, linhas 296–320 |
+| `T` | `_transcript`, linhas 373–388 |
+| `check_peer` | `_check_peer`, linhas 390–396 |
+| `EXPIRE` | `_expire`, linhas 398–407 |
+| `INITIATE`, `RESPOND`, `FINISH`, `COMPLETE` | linhas 411–516 (métodos públicos com trava e implementações internas) |
+| Testes | [`tests/test_hsl_auth_v1.py`](../../tests/test_hsl_auth_v1.py) (51 testes: 32 originais e 19 de regressão para H-1, H-5 e H-6) |
 
-**Implementação de referência desta especificação:** SHA-256 de `hsl/hsl_auth_v1.py` = `dba58ff7b31d5638cde6c180040fdf64cf15130d403436f0815922696ff0b667`. O workflow `formal` compara esse valor com o arquivo atual e falha se o código mudar sem que esta especificação (incluindo os números de linha acima) seja revista e o valor atualizado.
+**Implementação de referência desta especificação:** SHA-256 de `hsl/hsl_auth_v1.py` = `f8360e32a4d1e6593f4561a8e83fb1a3546407058d5818aa1885c47fec0e6216`. O workflow `formal` compara esse valor com o arquivo atual e falha se o código mudar sem que esta especificação (incluindo os números de linha acima) seja revista e o valor atualizado.
 
 ---
 
@@ -390,8 +393,8 @@ O ProVerif analisa o modelo, não o código Python. A validade das conclusões p
 | Frescor dos nonces | Representado (nomes novos a cada execução) | Modelo; premissa A5 |
 | Carimbo de tempo e janela `W` | Abstraído: `tA` é valor público novo; a janela não é modelada | Testes `test_stale_challenge_is_rejected`, `test_expired_pending_challenge_is_rejected` |
 | Estado pendente (`pend_I`, `pend_R`) | Representado de forma implícita: cada processo de sessão só aceita a mensagem com seu próprio nonce | Modelo; testes de repetição |
-| Ordem de consumo do estado (H-1) | Fora do modelo | Achado H-1, reproduzido; correção em micro-sprint separado |
-| Registro `seen` contra repetição | Fora do modelo. No modelo, a resistência a repetição decorre da correspondência injetiva com nonces frescos | Testes `test_f08_*` |
+| Ordem de consumo do estado (H-1) | Fora do modelo | Achado H-1 corrigido; testes `test_h1_*` |
+| Registro `seen` contra repetição | Fora do modelo. No modelo, a resistência a repetição decorre da correspondência injetiva com nonces frescos | Testes `test_f08_*`, `test_h5_*` |
 | Expiração, reinício de processo, concorrência entre threads | Fora do escopo | Declarado na seção 9.5 |
 | `check_peer` (identificador próprio, registro, fase) | Representado (`idA <> me`, tabela de chaves, `slot`), **com ressalva**: no modelo a tabela de chaves é por par e sempre obrigatória; no código o registro `peers` é opcional e há uma única PSK por instância (H-2). A correspondência vale para implantações com uma instância do motor por par | Modelo; testes `test_f04_*`, `test_reflection_*` |
 | PSK exclusiva por par (A2) | Representado como tabela de chaves por par | Modelo. O controle (i) torna a chave do par conhecida do atacante e mostra que, nesse caso, P1 e P2 deixam de valer; ele não modela um terceiro nó legítimo que compartilhe a mesma PSK |

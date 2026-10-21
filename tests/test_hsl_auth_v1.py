@@ -331,3 +331,98 @@ def test_measured_sizes_are_recorded(capsys):
     id_a, id_b = len(A.encode()), len(B.encode())
     assert sizes == [2 + 1 + id_a + 2 + 32 + 8, 2 + 1 + id_b + 2 + 32 + 32 + 32, 2 + 32 + 32]
     print(f"HSL v1 measured sizes (ids {id_a}/{id_b} B): {sizes} total {sum(sizes)}")
+
+
+# --- H-1: invalid messages must not consume pending state ----------------------
+
+
+@pytest.mark.parametrize(
+    "field_name,value",
+    [
+        ("tag_b", b"\x00" * 32),
+        ("responder_id", "mallory-node-99"),
+        ("phase_slot", (harmonic_phase_slot(B, 12) + 1) % 12),
+    ],
+)
+def test_h1_invalid_response_does_not_cancel_handshake(field_name, value):
+    alice, bob = pair()
+    challenge = alice.initiate(B)
+    response = bob.respond(wire(challenge))
+    forged = dataclasses.replace(response, **{field_name: value})
+    with pytest.raises(HSLAuthError):
+        alice.finish(wire(forged))
+    verify, s_alice = alice.finish(wire(response))
+    s_bob = bob.complete(wire(verify))
+    assert s_alice.session_id == s_bob.session_id
+
+
+def test_h1_invalid_verify_does_not_cancel_handshake():
+    alice, bob = pair()
+    response = bob.respond(wire(alice.initiate(B)))
+    verify, s_alice = alice.finish(wire(response))
+    forged = Verify(nonce_b=verify.nonce_b, tag_a=b"\x00" * 32)
+    with pytest.raises(HSLAuthError, match="verify authentication failed"):
+        bob.complete(wire(forged))
+    assert bob.complete(wire(verify)).session_id == s_alice.session_id
+
+
+def test_h1_state_is_consumed_after_success():
+    alice, bob = pair()
+    _, response, verify, _, _ = full_handshake(alice, bob)
+    with pytest.raises(HSLAuthError, match="no pending challenge"):
+        alice.finish(wire(response))
+    with pytest.raises(HSLAuthError, match="no pending session"):
+        bob.complete(wire(verify))
+
+
+# --- H-5: replay protection covers the whole acceptance window -----------------
+
+
+def test_h5_replay_rejected_at_window_boundary():
+    psk = generate_psk()
+    alice_clock, bob_clock = Clock(1_800_000_060.0), Clock(1_800_000_000.0)
+    alice = HSLAuthEngine(A, psk, clock=alice_clock)
+    bob = HSLAuthEngine(B, psk, clock=bob_clock)
+    challenge = wire(alice.initiate(B))  # timestamp W ahead of bob's clock
+    bob.respond(challenge)
+    bob_clock.t = challenge.timestamp + 60  # last instant the timestamp is accepted
+    with pytest.raises(HSLAuthError, match="replayed"):
+        bob.respond(challenge)
+
+
+def test_h5_challenge_rejected_after_window_even_without_registry():
+    alice, bob = pair()
+    challenge = wire(alice.initiate(B))
+    bob.respond(challenge)
+    bob._clock.t += 61
+    with pytest.raises(HSLAuthError, match="outside window"):
+        bob.respond(challenge)
+
+
+# --- H-6: configuration validation ----------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"base": 0},
+        {"base": 65536},
+        {"base": -1},
+        {"base": 12.0},
+        {"f0": float("nan")},
+        {"f0": float("inf")},
+        {"f0": 0.0},
+        {"f0": -0.0},
+        {"f0": -440.0},
+        {"timestamp_window": 0},
+        {"timestamp_window": 1.5},
+    ],
+)
+def test_h6_invalid_configuration_is_rejected(kwargs):
+    with pytest.raises(HSLAuthError):
+        HSLAuthConfig(**kwargs)
+
+
+def test_h6_valid_boundary_configuration_is_accepted():
+    alice, bob = pair(config=HSLAuthConfig(f0=1e-9, base=65535, timestamp_window=1))
+    full_handshake(alice, bob)
