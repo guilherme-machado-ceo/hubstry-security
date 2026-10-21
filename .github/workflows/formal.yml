@@ -6,7 +6,7 @@ name: formal
 
 on:
   push:
-    branches: [main, spec/hsl-auth-v1-formal]
+    branches: [main, spec/hsl-auth-v1-formal, ci/proverif-hash-crosscheck]
     paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", "hsl/hsl_auth_v1.py", ".github/workflows/formal.yml"]
   pull_request:
     paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", "hsl/hsl_auth_v1.py", ".github/workflows/formal.yml"]
@@ -43,6 +43,19 @@ jobs:
             echo "::error::hsl/hsl_auth_v1.py changed: revise docs/specs/hsl-auth-v1-spec.md (sections 8, 11, 12.4) and update the recorded SHA-256"
             exit 1
           fi
+
+      - name: "Independent source: compare ProVerif tarball with the Debian archive"
+        run: |
+          pool="https://deb.debian.org/debian/pool/main/p/proverif/"
+          curl -fsSL "$pool" -o pool.html || { echo "::warning title=debian-crosscheck::pool not reachable"; exit 0; }
+          grep -oE 'proverif_[^"<>]*orig[^"<>]*' pool.html | sort -u | while IFS= read -r f; do echo "::notice title=debian-pool::$f"; done
+          f=$(grep -oE "proverif_${PROVERIF_VERSION}[^\"<>]*orig\.tar\.gz" pool.html | sort -u | head -1)
+          if [ -z "$f" ]; then echo "::warning title=debian-crosscheck::no orig tarball for ${PROVERIF_VERSION} in Debian pool"; exit 0; fi
+          curl -fsSL "$pool$f" -o debian.tar.gz
+          d=$(sha256sum debian.tar.gz | cut -d' ' -f1)
+          echo "::notice title=debian-crosscheck::$f sha256 $d; pinned $PROVERIF_SHA256"
+          if [ "$d" = "$PROVERIF_SHA256" ]; then echo "::notice title=debian-crosscheck::MATCH"; else
+            mkdir -p a b && tar -xzf debian.tar.gz -C a && echo "::notice title=debian-crosscheck::byte-level differs; contents listed in log"; ls -R a | head -20; fi
 
       - name: Install ProVerif from the official source tarball
         run: |
