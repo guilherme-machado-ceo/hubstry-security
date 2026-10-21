@@ -44,6 +44,15 @@ jobs:
             exit 1
           fi
 
+      - name: "Independent source: ProVerif checksum published in opam-repository"
+        run: |
+          base="https://raw.githubusercontent.com/ocaml/opam-repository/master/packages/proverif/proverif.${PROVERIF_VERSION}/opam"
+          if ! curl -fsSL "$base" -o opam.txt; then echo "::warning title=opam-crosscheck::opam file not reachable"; exit 0; fi
+          grep -E 'src:|sha256|sha512|md5' opam.txt | while IFS= read -r l; do echo "::notice title=opam-file::$l"; done
+          o=$(awk '/^url \{/{u=1} u&&/sha256=/{match($0,/sha256=[0-9a-f]{64}/); print substr($0,RSTART+7,64); exit}' opam.txt)
+          echo "::notice title=opam-crosscheck::opam sha256 ${o:-none}; pinned $PROVERIF_SHA256"
+          if [ "$o" = "$PROVERIF_SHA256" ]; then echo "::notice title=opam-crosscheck::MATCH"; else echo "::warning title=opam-crosscheck::NO MATCH or no sha256"; fi
+
       - name: Install ProVerif from the official source tarball
         run: |
           sudo apt-get update -q
