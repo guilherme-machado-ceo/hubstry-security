@@ -1,0 +1,7 @@
+RESULT (even event(AcceptR(A[],B[],t,s)) ==> event(BeginI(B[],A[],t,s)) is false.)
+RESULT (even event(AcceptR(B[],A[],t,s)) ==> event(BeginI(A[],B[],t,s)) is false.)
+RESULT inj-event(AcceptI(A[],B[],t,s)) ==> inj-event(BeginR(B[],A[],t,s)) is true.
+RESULT inj-event(AcceptI(B[],A[],t,s)) ==> inj-event(BeginR(A[],B[],t,s)) is true.
+RESULT inj-event(AcceptR(A[],B[],t,s)) ==> inj-event(BeginI(B[],A[],t,s)) is false.
+RESULT inj-event(AcceptR(B[],A[],t,s)) ==> inj-event(BeginI(A[],B[],t,s)) is false.
+RESULT not attacker(kab[]) is true.

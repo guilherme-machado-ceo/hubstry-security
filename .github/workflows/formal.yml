@@ -1,0 +1,94 @@
+name: formal
+
+# Symbolic verification of HSL Auth v1 with ProVerif.
+# Separate from ci.yml and not a required check: it records evidence for the
+# specification in docs/specs/hsl-auth-v1-spec.md.
+
+on:
+  push:
+    branches: [main, spec/hsl-auth-v1-formal]
+    paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", "hsl/hsl_auth_v1.py", ".github/workflows/formal.yml"]
+  pull_request:
+    paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", "hsl/hsl_auth_v1.py", ".github/workflows/formal.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: formal-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROVERIF_VERSION: "2.05"
+  # Expected SHA-256 of the official ProVerif source tarball. When set, the
+  # download must match it. See docs/specs/hsl-auth-v1-spec.md, section 12.
+  PROVERIF_SHA256: "4871f53c32ab4a04669a060c4886ba5d9080496963fb980a9a62d2c429ceabc4"
+
+jobs:
+  proverif:
+    name: proverif (HSL Auth v1)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Correspondence guard: implementation matches the specified version"
+        run: |
+          expected=$(grep -oE 'SHA-256 de `hsl/hsl_auth_v1.py` = `[0-9a-f]{64}`' docs/specs/hsl-auth-v1-spec.md | grep -oE '[0-9a-f]{64}')
+          actual=$(sha256sum hsl/hsl_auth_v1.py | cut -d' ' -f1)
+          echo "::notice title=implementation-sha256::expected $expected; actual $actual"
+          test -n "$expected"
+          if [ "$expected" != "$actual" ]; then
+            echo "::error::hsl/hsl_auth_v1.py changed: revise docs/specs/hsl-auth-v1-spec.md (sections 8, 11, 12.4) and update the recorded SHA-256"
+            exit 1
+          fi
+
+      - name: Install ProVerif from the official source tarball
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ocaml-nox
+          curl -fsSL -o proverif.tar.gz "https://bblanche.gitlabpages.inria.fr/proverif/proverif${PROVERIF_VERSION}.tar.gz"
+          sha256sum proverif.tar.gz | tee proverif.sha256
+          echo "::notice title=proverif-tarball-sha256::$(cut -d' ' -f1 proverif.sha256)"
+          if [ -n "$PROVERIF_SHA256" ]; then
+            echo "$PROVERIF_SHA256  proverif.tar.gz" | sha256sum -c -
+          fi
+          mkdir -p "$RUNNER_TEMP/pv" && tar -xzf proverif.tar.gz -C "$RUNNER_TEMP/pv"
+          cd "$RUNNER_TEMP/pv/proverif${PROVERIF_VERSION}"
+          ./build -nointeract
+          echo "$PWD" >> "$GITHUB_PATH"
+
+      - name: "Main model: results equal formal/proverif/expected/hsl_auth_v1.txt"
+        run: |
+          mkdir -p out
+          proverif formal/proverif/hsl_auth_v1.pv | tee out/hsl_auth_v1.txt
+          grep '^RESULT' out/hsl_auth_v1.txt | while IFS= read -r l; do echo "::notice title=main::$l"; done
+          grep '^RESULT' out/hsl_auth_v1.txt | LC_ALL=C sort > out/hsl_auth_v1.results
+          diff -u formal/proverif/expected/hsl_auth_v1.txt out/hsl_auth_v1.results
+
+      - name: "Control (i): results equal formal/proverif/expected/control_shared_psk.txt"
+        run: |
+          proverif formal/proverif/control_shared_psk.pv | tee out/control_shared_psk.txt
+          grep '^RESULT' out/control_shared_psk.txt | while IFS= read -r l; do echo "::notice title=control-shared-psk::$l"; done
+          grep '^RESULT' out/control_shared_psk.txt | LC_ALL=C sort > out/control_shared_psk.results
+          diff -u formal/proverif/expected/control_shared_psk.txt out/control_shared_psk.results
+
+      - name: "Control (ii): results equal formal/proverif/expected/control_no_verify.txt"
+        run: |
+          proverif formal/proverif/control_no_verify.pv | tee out/control_no_verify.txt
+          grep '^RESULT' out/control_no_verify.txt | while IFS= read -r l; do echo "::notice title=control-no-verify::$l"; done
+          grep '^RESULT' out/control_no_verify.txt | LC_ALL=C sort > out/control_no_verify.results
+          diff -u formal/proverif/expected/control_no_verify.txt out/control_no_verify.results
+
+      - name: Record environment
+        if: always()
+        run: |
+          { echo "commit: $GITHUB_SHA"; proverif -help 2>&1 | head -2 || true; cat proverif.sha256 2>/dev/null || true; } | tee out/environment.txt
+          echo "::notice title=environment::commit $GITHUB_SHA; $(proverif -help 2>&1 | head -1)"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: proverif-results
+          path: out/
