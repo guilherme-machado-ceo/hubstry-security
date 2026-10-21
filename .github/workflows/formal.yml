@@ -21,6 +21,9 @@ concurrency:
 
 env:
   PROVERIF_VERSION: "2.05"
+  # Expected SHA-256 of the official ProVerif source tarball. When set, the
+  # download must match it. See docs/specs/hsl-auth-v1-spec.md, section 12.
+  PROVERIF_SHA256: ""
 
 jobs:
   proverif:
@@ -36,6 +39,10 @@ jobs:
           sudo apt-get install -y -q ocaml-nox
           curl -fsSL -o proverif.tar.gz "https://bblanche.gitlabpages.inria.fr/proverif/proverif${PROVERIF_VERSION}.tar.gz"
           sha256sum proverif.tar.gz | tee proverif.sha256
+          echo "::notice title=proverif-tarball-sha256::$(cut -d' ' -f1 proverif.sha256)"
+          if [ -n "$PROVERIF_SHA256" ]; then
+            echo "$PROVERIF_SHA256  proverif.tar.gz" | sha256sum -c -
+          fi
           mkdir -p "$RUNNER_TEMP/pv" && tar -xzf proverif.tar.gz -C "$RUNNER_TEMP/pv"
           cd "$RUNNER_TEMP/pv/proverif${PROVERIF_VERSION}"
           ./build -nointeract
@@ -45,26 +52,27 @@ jobs:
         run: |
           mkdir -p out
           proverif formal/proverif/hsl_auth_v1.pv | tee out/main.txt
-          grep '^RESULT' out/main.txt
+          grep '^RESULT' out/main.txt | while IFS= read -r l; do echo "::notice title=main::$l"; done
           test "$(grep -c '^RESULT .* is true\.$' out/main.txt)" -eq 5
           ! grep -E '^RESULT .* (is false|cannot be proved)' out/main.txt
 
       - name: "Control (i) PSK shared with attacker node: attack found"
         run: |
           proverif formal/proverif/control_shared_psk.pv | tee out/control_shared_psk.txt
-          grep '^RESULT' out/control_shared_psk.txt
+          grep '^RESULT' out/control_shared_psk.txt | while IFS= read -r l; do echo "::notice title=control-shared-psk::$l"; done
           grep -q '^RESULT .* is false\.$' out/control_shared_psk.txt
 
       - name: "Control (ii) step 3 not verified: attack on P2 found"
         run: |
           proverif formal/proverif/control_no_verify.pv | tee out/control_no_verify.txt
-          grep '^RESULT' out/control_no_verify.txt
+          grep '^RESULT' out/control_no_verify.txt | while IFS= read -r l; do echo "::notice title=control-no-verify::$l"; done
           grep -q '^RESULT inj-event(AcceptR.* is false\.$' out/control_no_verify.txt
 
       - name: Record environment
         if: always()
         run: |
-          { proverif -help 2>&1 | head -1 || true; cat proverif.sha256 2>/dev/null || true; } | tee out/environment.txt
+          { echo "commit: $GITHUB_SHA"; proverif -help 2>&1 | head -2 || true; cat proverif.sha256 2>/dev/null || true; } | tee out/environment.txt
+          echo "::notice title=environment::commit $GITHUB_SHA; $(proverif -help 2>&1 | head -1)"
 
       - uses: actions/upload-artifact@v4
         if: always()

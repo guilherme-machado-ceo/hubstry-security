@@ -18,6 +18,10 @@ const L_SESS: bitstring.
 
 fun slot(id): bitstring.
 fun mac(key, bitstring): bitstring.
+(* trunc16 models the truncation of the session-id MAC to 16 bytes, as in the
+   implementation (HMAC(K, L_SESS || U)[:16]). No equations: truncation is
+   treated as an opaque function; collisions of the 128-bit value are ignored. *)
+fun trunc16(bitstring): bitstring.
 
 (* Honest nodes A and B; C is controlled by the attacker. *)
 free A: id.
@@ -55,7 +59,7 @@ let Initiator(me: id) =
   let T = (f0, base, me, slot(me), nA, tA, idB, slotB, nB) in
   if tagB = mac(k, (L_RESP, T)) then
   let U = (T, tagB) in
-  let sid = mac(k, (L_SESS, U)) in
+  let sid = trunc16(mac(k, (L_SESS, U))) in
   event AcceptI(me, peer, T, sid);
   event BeginI(me, peer, T, sid);
   out(c, (nB, mac(k, (L_VER, U)))).
@@ -69,7 +73,7 @@ let Responder(me: id) =
   let T = (f0, base, idA, slotA, nA, tA, me, slot(me), nB) in
   let tagB = mac(k, (L_RESP, T)) in
   let U = (T, tagB) in
-  let sid = mac(k, (L_SESS, U)) in
+  let sid = trunc16(mac(k, (L_SESS, U))) in
   event BeginR(me, idA, T, sid);
   out(c, (me, slot(me), nA, nB, tagB));
   in(c, (=nB, tagA: bitstring));
