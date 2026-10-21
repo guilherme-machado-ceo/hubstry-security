@@ -44,8 +44,12 @@ O histórico do Git comprova a **sequência e as datas dos commits** registrados
 | Integração contínua com três verificações obrigatórias | `.github/workflows/ci.yml` | `2e82b4c`, 05/10/2026 (metadado de autor: ver seção 6) | PR #9, 05/10/2026 |
 | Especificação formal do HSL Auth v1 e modelos ProVerif | `docs/specs/hsl-auth-v1-spec.md`, `formal/proverif/`, `.github/workflows/formal.yml` | `fff050f`, 21/10/2026 | PR #11, 21/10/2026 |
 | Correções H-1, H-5 e H-6 do HSL Auth v1 | `hsl/hsl_auth_v1.py`, `tests/test_hsl_auth_v1.py` | `994661d`, 21/10/2026 | PR #13, 21/10/2026 |
+| Capacidade de endereçamento do HALE-Q (probabilidade ótima de acerto e quantidade de Holevo por codificação) | `quantum/capacity.py`, `tests/test_capacity.py`, `docs/research/hale-q-capacity-2026-10.md` | `cc8a75c`, 21/10/2026 | PR #18, 21/10/2026 |
+| Composição de quantizadores e regra de hierarquia de grades do HALE-Q (verificação exata) | `quantum/quantizer_composition.py`, `tests/test_quantizer_composition.py`, `docs/research/quantizer-composition-2026-10.md` | `915dca6`, 21/10/2026 | PR #19, 21/10/2026 |
 
 **Origem conceitual.** O HALE (Harmonic Addressing & Labeling Equation) é o framework matemático de autoria do pesquisador principal do qual derivam as linhas HSL e HALE-Q. Ele é externo a este repositório. A versão examinada aqui é *HALE: Harmonic Addressing & Labeling Equation — A General-Purpose Mathematical Framework for Complex Systems*, Version 3.0, 2026, registrada em [`docs/research/hale-audit.md`](research/hale-audit.md); o DOI dessa versão ainda não foi atribuído e não é inferido. As demais publicações do autor estão listadas no perfil ORCID indicado na seção 2.
+
+**Origem da teoria de composição de quantizadores.** Os teoremas verificados no módulo `quantum/quantizer_composition.py` provêm do artigo de trabalho *A Theory of Quantizer Composition*, versão 1.0, de autoria do pesquisador principal, externo a este repositório. O repositório registra a verificação computacional e as correções identificadas (caso m = 1 e fórmulas do domínio intervalo); a verificação por faixas finitas não substitui as demonstrações gerais nem comprova titularidade, que decorre da autoria e das datas registradas.
 
 ## 5. Componentes e ferramentas de terceiros
 
