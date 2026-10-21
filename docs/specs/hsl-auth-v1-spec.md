@@ -1,0 +1,335 @@
+# Especificação formal — HSL Auth v1 (PSK-HMAC)
+
+| Item | Valor |
+|---|---|
+| Documento | Especificação técnica normativa do protocolo de autenticação HSL Auth v1 |
+| Versão do documento | 0.1 (rascunho para revisão) |
+| Implementação de referência | [`hsl/hsl_auth_v1.py`](../../hsl/hsl_auth_v1.py), última alteração no commit `e8f15f5`; `main` em `656c6b8` |
+| Estado | Protocolo experimental. Sem revisão criptográfica externa. Sem verificação formal concluída. |
+
+As palavras **DEVE**, **NÃO DEVE** e **PODE** têm sentido normativo, no estilo da RFC 2119 (convenção da IETF — Internet Engineering Task Force — para requisitos em especificações).
+
+---
+
+## 1. Objetivo e escopo
+
+O HSL Auth v1 é um protocolo de **autenticação mútua** entre dois nós que compartilham uma chave secreta prévia (PSK, *Pre-Shared Key*). Em três mensagens, cada nó obtém evidência de que o outro conhece a PSK e participou da mesma execução do protocolo, com os mesmos identificadores, nonces e contexto.
+
+**O protocolo garante, sob as premissas da seção 4:** as propriedades P1 a P4 da seção 9.
+
+**O protocolo não estabelece chave de sessão.** O valor `session_id` produzido ao final é um identificador local de correlação. Nesta versão ele não é designado como chave criptográfica e NÃO DEVE ser usado para cifrar ou autenticar dados da aplicação (ver seção 10, item H-3).
+
+**Papel do contexto harmônico.** A frequência fundamental `f0`, a base `base` e a fase harmônica de cada nó (`slot`) são parâmetros públicos de contexto e identificação. Entram no transcript autenticado, mas não são segredos e não contribuem para a segurança. **Toda a segurança do protocolo deriva da PSK e do HMAC-SHA-256.**
+
+---
+
+## 2. Notação e primitivas
+
+| Símbolo | Significado |
+|---|---|
+| `‖` | Concatenação de sequências de bytes |
+| `lp(x)` | Campo prefixado pelo comprimento: `u32_be(len(x)) ‖ x` |
+| `u8`, `u16_be`, `u32_be`, `u64_be` | Inteiro sem sinal de 1, 2, 4 ou 8 bytes; `_be` = big-endian |
+| `f64_be(x)` | Número em ponto flutuante IEEE 754 de 64 bits, big-endian |
+| `MAC(K, x)` | HMAC-SHA-256 (RFC 2104 e FIPS 198-1) com chave `K` sobre `x`; saída de 32 bytes |
+| `Rand(n)` | `n` bytes de um gerador criptograficamente seguro |
+| `slot(id)` | `int_be(SHA-256(utf8(id))) mod base` — computável por qualquer um |
+| `K` | PSK do par de nós |
+| `W` | Janela temporal em segundos (padrão: 60) |
+
+**Constantes**
+
+| Nome | Valor |
+|---|---|
+| `PROTOCOL_ID` | `"HSL-v1"` (ASCII) |
+| `VERSION` | `1` |
+| `MSG_CHALLENGE`, `MSG_RESPONSE`, `MSG_VERIFY` | `1`, `2`, `3` |
+| `L_RESP` | `"HSL-v1/response"` |
+| `L_VER` | `"HSL-v1/verify"` |
+| `L_SESS` | `"HSL-v1/session"` |
+| `NONCE_LEN`, `TAG_LEN` | 32 bytes |
+| `SESSION_ID_LEN` | 16 bytes |
+| `MIN_PSK_LEN` | 32 bytes |
+| Identificador de nó | 1 a 255 bytes em UTF-8 |
+
+Os três rótulos diferem já no oitavo byte (`r`, `v`, `s`), e nenhum é prefixo de outro. Assim, as entradas do HMAC nos três usos nunca coincidem, o que garante separação de domínio entre os usos da mesma chave.
+
+---
+
+## 3. Participantes e papéis
+
+- **Iniciador (A):** envia a mensagem 1 e a mensagem 3.
+- **Respondente (B):** envia a mensagem 2.
+
+Um mesmo nó PODE atuar nos dois papéis, em execuções distintas.
+
+---
+
+## 4. Premissas de implantação (normativas)
+
+| ID | Premissa |
+|---|---|
+| A1 | `K` é gerada uniformemente ao acaso, com pelo menos 32 bytes, e distribuída fora do protocolo por canal seguro. |
+| A2 | **`K` é exclusiva do par de nós (A, B).** Nenhum terceiro nó conhece `K`. Se a mesma PSK for compartilhada por mais de dois nós, as garantias de identidade da seção 9 não valem entre eles (ver H-2). |
+| A3 | Os identificadores de nó são únicos no domínio de implantação. |
+| A4 | Cada nó mantém os relógios sincronizados com erro inferior a `W`. |
+| A5 | `Rand` produz valores imprevisíveis e não repetidos. Com 32 bytes, a probabilidade de colisão é desprezível. |
+| A6 | A implementação de HMAC-SHA-256 é correta e as comparações de tags são feitas em tempo constante. |
+
+---
+
+## 5. Diagrama de sequência
+
+```mermaid
+sequenceDiagram
+    participant A as Iniciador A
+    participant B as Respondente B
+    Note over A: nA ← Rand(32), tA ← agora<br/>guarda pendente[nA] = (desafio, B)
+    A->>B: 1. Challenge(idA, slotA, nA, tA)
+    Note over B: verifica par, slotA, |agora − tA| ≤ W,<br/>(idA, nA) não visto<br/>nB ← Rand(32)<br/>T ← transcript(...)<br/>tagB ← MAC(K, L_RESP ‖ T)
+    B->>A: 2. Response(idB, slotB, nA, nB, tagB)
+    Note over A: localiza pendente[nA], confere idB esperado e slotB<br/>verifica tagB<br/>tagA ← MAC(K, L_VER ‖ T ‖ lp(tagB))<br/>A aceita; sid ← MAC(K, L_SESS ‖ T ‖ lp(tagB))[0..16]
+    A->>B: 3. Verify(nB, tagA)
+    Note over B: localiza pendente[nB]<br/>verifica tagA<br/>B aceita; sid ← mesmo cálculo
+```
+
+---
+
+## 6. Sintaxe
+
+### 6.1 Formato das mensagens
+
+Todas as mensagens começam com o cabeçalho `u8(VERSION) ‖ u8(tipo)`.
+
+**Mensagem 1 — Challenge (A → B)**
+
+| Campo | Codificação | Bytes |
+|---|---|---|
+| versão | `u8` = 1 | 1 |
+| tipo | `u8` = 1 | 1 |
+| `len(idA)` | `u8` | 1 |
+| `idA` | UTF-8 | 1–255 |
+| `slotA` | `u16_be` | 2 |
+| `nA` | bytes | 32 |
+| `tA` | `u64_be`, segundos Unix | 8 |
+
+**Mensagem 2 — Response (B → A)**
+
+| Campo | Codificação | Bytes |
+|---|---|---|
+| versão, tipo | `u8` = 1, `u8` = 2 | 2 |
+| `len(idB)`, `idB` | `u8`, UTF-8 | 2–256 |
+| `slotB` | `u16_be` | 2 |
+| `nA` | bytes | 32 |
+| `nB` | bytes | 32 |
+| `tagB` | bytes | 32 |
+
+**Mensagem 3 — Verify (A → B)**
+
+| Campo | Codificação | Bytes |
+|---|---|---|
+| versão, tipo | `u8` = 1, `u8` = 3 | 2 |
+| `nB` | bytes | 32 |
+| `tagA` | bytes | 32 |
+
+Tamanho total medido na implementação de referência, com identificadores de 13 e 11 bytes: 58 + 112 + 66 = 236 bytes.
+
+### 6.2 Regras de decodificação
+
+Um receptor DEVE rejeitar a mensagem quando:
+- a versão for diferente de 1 ou o tipo não for o esperado;
+- faltarem bytes (mensagem truncada) ou sobrarem bytes após o último campo;
+- o identificador tiver comprimento 0 ou não for UTF-8 válido.
+
+Nenhuma mensagem contém indicador de "autenticado": o resultado da autenticação é sempre estado local.
+
+### 6.3 Transcript
+
+```
+T = lp(PROTOCOL_ID) ‖ lp(f64_be(f0)) ‖ lp(u16_be(base))
+  ‖ lp(utf8(idA)) ‖ lp(u16_be(slotA)) ‖ lp(nA) ‖ lp(u64_be(tA))
+  ‖ lp(utf8(idB)) ‖ lp(u16_be(slotB)) ‖ lp(nB)
+```
+
+Como todo campo é prefixado pelo comprimento, a codificação é injetiva: dois transcripts diferentes nunca produzem a mesma sequência de bytes.
+
+### 6.4 Valores derivados
+
+```
+tagB = MAC(K, L_RESP ‖ T)
+U    = T ‖ lp(tagB)
+tagA = MAC(K, L_VER  ‖ U)
+sid  = MAC(K, L_SESS ‖ U)[0 .. 16)
+```
+
+---
+
+## 7. Semântica
+
+### 7.1 Estado de cada nó
+
+| Estrutura | Conteúdo | Validade |
+|---|---|---|
+| `pend_I[nA]` | `(desafio, par esperado, instante de criação)` | `W` segundos após a criação |
+| `pend_R[nB]` | `(U, instante de criação, idA)` | `W` segundos após a criação |
+| `seen[(idA, nA)]` | instante de expiração | `2W` segundos após o recebimento |
+
+Esse estado é volátil: vive enquanto a instância do motor estiver ativa e não é compartilhado entre instâncias.
+
+### 7.2 Máquina de estados por execução
+
+| Papel | Estados |
+|---|---|
+| Iniciador | `INICIAL → AGUARDA_RESPOSTA → ACEITO`, ou `→ REJEITADO` |
+| Respondente | `INICIAL → AGUARDA_VERIFY → ACEITO`, ou `→ REJEITADO` |
+
+Uma execução só chega a `ACEITO` se todas as verificações da seção 8 passarem. Qualquer falha leva a `REJEITADO`, sem mensagem de erro ao par.
+
+### 7.3 Verificação de par (`check_peer`)
+
+Ao processar uma mensagem que traz um identificador de par `id` com fase `s`, o nó DEVE rejeitar quando:
+1. `id` for igual ao próprio identificador (proteção contra reflexão);
+2. houver registro de pares configurado e `id` não estiver nele;
+3. `s ≠ slot(id)`.
+
+Essa verificação é de política e consistência. Ela não autentica ninguém.
+
+---
+
+## 8. Pseudocódigo dos algoritmos locais
+
+```
+procedure INITIATE(peer):
+    require peer ≠ self.id
+    EXPIRE()
+    nA ← Rand(32); tA ← floor(now())
+    C ← Challenge(self.id, slot(self.id), nA, tA)
+    pend_I[nA] ← (C, peer, now())
+    return C
+
+procedure RESPOND(C):
+    EXPIRE()
+    CHECK_PEER(C.idA, C.slotA)
+    if |now() − C.tA| > W: reject
+    if (C.idA, C.nA) ∈ seen: reject            // repetição
+    seen[(C.idA, C.nA)] ← now() + 2W
+    nB ← Rand(32)
+    T ← TRANSCRIPT(C, self.id, slot(self.id), nB)
+    tagB ← MAC(K, L_RESP ‖ T)
+    pend_R[nB] ← (T ‖ lp(tagB), now(), C.idA)
+    return Response(self.id, slot(self.id), C.nA, nB, tagB)
+
+procedure FINISH(R):                           // iniciador
+    EXPIRE()
+    (C, peer, _) ← pend_I.remove(R.nA)  or reject   // ver H-1
+    if R.idB ≠ peer: reject
+    CHECK_PEER(R.idB, R.slotB)
+    T ← TRANSCRIPT(C, R.idB, R.slotB, R.nB)
+    if not ConstEq(MAC(K, L_RESP ‖ T), R.tagB): reject
+    U ← T ‖ lp(R.tagB)
+    accept(peer = R.idB, sid = MAC(K, L_SESS ‖ U)[0..16))
+    return Verify(R.nB, MAC(K, L_VER ‖ U))
+
+procedure COMPLETE(V):                         // respondente
+    EXPIRE()
+    (U, _, idA) ← pend_R.remove(V.nB)  or reject    // ver H-1
+    if not ConstEq(MAC(K, L_VER ‖ U), V.tagA): reject
+    accept(peer = idA, sid = MAC(K, L_SESS ‖ U)[0..16))
+
+procedure EXPIRE():
+    remove de seen as entradas expiradas
+    remove de pend_I e pend_R as entradas com mais de W segundos
+```
+
+---
+
+## 9. Modelo de ameaça e propriedades de segurança
+
+### 9.1 Modelo de atacante
+
+Adota-se o modelo **Dolev-Yao**, padrão na análise de protocolos: o atacante controla toda a rede. Ele pode ler, bloquear, atrasar, reordenar, repetir e forjar mensagens, e iniciar quantas execuções quiser com quaisquer nós, em qualquer papel.
+
+O atacante **não** quebra as primitivas criptográficas (premissas C1 e C2 abaixo) e **não** conhece `K`, a menos que ela seja explicitamente comprometida.
+
+### 9.2 Premissas criptográficas
+
+| ID | Premissa |
+|---|---|
+| C1 | HMAC-SHA-256 com chave secreta uniforme é uma função pseudoaleatória (PRF). Em particular, é infalsificável: sem `K`, não se produz uma tag válida para entrada nova. |
+| C2 | Os nonces de 32 bytes não se repetem e não são previsíveis (premissa A5). |
+
+### 9.3 Eventos
+
+Para definir as propriedades, cada execução registra eventos:
+
+- `BeginI(A, B, X)`: A, como iniciador, envia a mensagem 3 sobre os dados `X`.
+- `AcceptI(A, B, X)`: A aceita B como respondente, em `FINISH`.
+- `BeginR(B, A, X)`: B, como respondente, envia a mensagem 2.
+- `AcceptR(B, A, X)`: B aceita A como iniciador, em `COMPLETE`.
+
+Aqui `X = (f0, base, idA, slotA, nA, tA, idB, slotB, nB)` é o conteúdo do transcript `T`.
+
+### 9.4 Propriedades pretendidas
+
+| ID | Propriedade | Definição |
+|---|---|---|
+| **P1** | Autenticação do respondente (acordo injetivo) | Se A executa `AcceptI(A, B, X)` e `K` não foi comprometida, então B executou `BeginR(B, A, X)` antes, e a cada `AcceptI` corresponde um `BeginR` distinto. |
+| **P2** | Autenticação do iniciador (acordo injetivo) | Se B executa `AcceptR(B, A, X)` e `K` não foi comprometida, então A executou `BeginI(A, B, X)` antes, e a cada `AcceptR` corresponde um `BeginI` distinto. |
+| **P3** | Vinculação da sessão | Quando A e B aceitam a mesma execução, concordam sobre os identificadores, as fases, os dois nonces, o carimbo de tempo, o contexto (`f0`, `base`) e o `sid`. |
+| **P4** | Sigilo da PSK | O atacante não obtém `K` a partir das execuções do protocolo. |
+
+O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *dentro* do modelo: uma mensagem antiga reenviada não produz uma segunda aceitação.
+
+### 9.5 Propriedades que não são reivindicadas
+
+- **Sigilo futuro (*forward secrecy*):** o comprometimento de `K` compromete as execuções passadas e futuras.
+- **Chave de sessão:** o protocolo não estabelece chave para proteger dados.
+- **Disponibilidade:** o atacante pode impedir a conclusão de execuções (ver H-1). Isso é inevitável no modelo Dolev-Yao, mas H-1 torna essa interrupção mais barata.
+- **Repetição após reinício:** o registro `seen` é volátil.
+- **Autenticação entre nós que compartilham a mesma PSK:** fora da premissa A2.
+- **Resistência quântica:** HMAC-SHA-256 com chave de 256 bits é considerado robusto contra os ataques quânticos conhecidos, mas esta especificação não reivindica propriedade pós-quântica.
+- **Canais laterais e implementação:** fora do escopo, exceto pela comparação em tempo constante (A6).
+
+---
+
+## 10. Achados identificados durante a especificação
+
+| ID | Achado | Efeito | Encaminhamento |
+|---|---|---|---|
+| **H-1** | `FINISH` e `COMPLETE` removem o estado pendente **antes** de verificar a tag (linhas 432 e 459 da implementação). | Quem observa a rede pode enviar uma Response ou Verify falsa com o nonce correto e cancelar uma execução legítima. Reproduzido: após uma Response com tag falsa, a Response legítima é rejeitada com "no pending challenge". Não permite falsificar autenticação (P1–P4 não são afetadas); é uma falha de disponibilidade. | Corrigir em micro-sprint próprio: verificar antes de remover o estado. |
+| **H-2** | O motor recebe uma única PSK por instância, para todos os pares. | A premissa A2 (PSK por par) só é atendida se a implantação usar uma instância por par. | Registrar como requisito de implantação; considerar na v1.1 um mapa `par → PSK`. |
+| **H-3** | `sid` é derivado como um valor pseudoaleatório, mas tem só 16 bytes, é chamado de identificador e não passa por função de derivação de chaves. | Não deve ser usado como chave. | Para estabelecer chave de sessão, definir derivação dedicada (por exemplo HKDF-SHA-256, RFC 5869) em versão futura, com prova própria. |
+| **H-4** | O iniciador não verifica o carimbo de tempo da própria execução além da expiração de `pend_I`. | Sem efeito em P1–P4; a expiração em `W` limita a validade. | Nenhum, salvo decisão de projeto. |
+
+---
+
+## 11. Correspondência entre especificação e implementação
+
+| Elemento | Implementação (`hsl/hsl_auth_v1.py`) |
+|---|---|
+| Constantes e rótulos | linhas 63–78 |
+| `slot(id)` | `harmonic_phase_slot`, linhas 90–98 |
+| `lp(x)` | `_lp`, linhas 106–108 |
+| Decodificação e regras da seção 6.2 | `_Reader`, linhas 118–158 |
+| Mensagens 1–3 | `Challenge`, `Response`, `Verify`, linhas 180–269 |
+| `T` | `_transcript`, linhas 347–362 |
+| `check_peer` | `_check_peer`, linhas 364–370 |
+| `EXPIRE` | `_expire`, linhas 372–381 |
+| `INITIATE`, `RESPOND`, `FINISH`, `COMPLETE` | linhas 385–467 |
+| Testes | [`tests/test_hsl_auth_v1.py`](../../tests/test_hsl_auth_v1.py) (32 testes) |
+
+---
+
+## 12. Próximo passo: verificação formal
+
+As propriedades P1 a P4 serão verificadas com o **ProVerif**, verificador automático de protocolos criptográficos no modelo simbólico (Dolev-Yao). O modelo cobrirá:
+- execuções ilimitadas e concorrentes, com os dois papéis em cada nó;
+- um terceiro nó controlado pelo atacante, com PSKs próprias com A e com B (premissa A2 respeitada);
+- casos de controle, em que a ferramenta deve encontrar ataque: (i) a mesma PSK compartilhada com o terceiro nó, violando A2; (ii) o respondente deixa de verificar a mensagem 3 (regressão do achado F-05 da auditoria).
+
+Modelo: [`formal/proverif/`](../../formal/proverif/). A execução ocorre no GitHub Actions ([`.github/workflows/formal.yml`](../../.github/workflows/formal.yml)).
+
+Limites que o relatório de verificação registrará:
+- o modelo simbólico trata o HMAC como primitiva ideal; não é uma prova computacional por redução;
+- relógio, janela temporal, expiração e reinício de processo são abstraídos;
+- a correspondência entre o modelo e o código Python é estabelecida por revisão (seção 11), não por extração automática.

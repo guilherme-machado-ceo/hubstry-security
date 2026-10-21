@@ -1,0 +1,86 @@
+(* HSL Auth v1 (PSK-HMAC) - symbolic ProVerif model.
+   Specification: docs/specs/hsl-auth-v1-spec.md
+   Attacker model: Dolev-Yao (controls the network; cannot break HMAC).
+   HMAC-SHA-256 is modelled as an ideal one-way function (assumption C1).
+   Clock, time window, expiry and process restart are abstracted. *)
+
+free c: channel.
+
+type key.
+type id.
+type nonce.
+
+const f0: bitstring.
+const base: bitstring.
+const L_RESP: bitstring.
+const L_VER: bitstring.
+const L_SESS: bitstring.
+
+fun slot(id): bitstring.
+fun mac(key, bitstring): bitstring.
+
+(* Honest nodes A and B; C is controlled by the attacker. *)
+free A: id.
+free B: id.
+free C: id.
+
+table keys(id, id, key).
+
+event BeginI(id, id, bitstring, bitstring).
+event AcceptI(id, id, bitstring, bitstring).
+event BeginR(id, id, bitstring, bitstring).
+event AcceptR(id, id, bitstring, bitstring).
+
+(* P1 - responder authentication (injective agreement, includes sid: P3) *)
+query t: bitstring, s: bitstring; inj-event(AcceptI(A, B, t, s)) ==> inj-event(BeginR(B, A, t, s)).
+query t: bitstring, s: bitstring; inj-event(AcceptI(B, A, t, s)) ==> inj-event(BeginR(A, B, t, s)).
+(* P2 - initiator authentication (injective agreement, includes sid: P3) *)
+query t: bitstring, s: bitstring; inj-event(AcceptR(B, A, t, s)) ==> inj-event(BeginI(A, B, t, s)).
+query t: bitstring, s: bitstring; inj-event(AcceptR(A, B, t, s)) ==> inj-event(BeginI(B, A, t, s)).
+
+free kab: key [private].
+free kac: key.
+free kbc: key.
+
+(* P4 - secrecy of the honest pair's PSK *)
+query attacker(kab).
+
+let Initiator(me: id) =
+  in(c, peer: id);
+  if peer <> me then
+  get keys(=me, =peer, k) in
+  new nA: nonce;
+  new tA: nonce;
+  out(c, (me, slot(me), nA, tA));
+  in(c, (idB: id, slotB: bitstring, =nA, nB: nonce, tagB: bitstring));
+  if idB = peer then
+  if slotB = slot(idB) then
+  let T = (f0, base, me, slot(me), nA, tA, idB, slotB, nB) in
+  if tagB = mac(k, (L_RESP, T)) then
+  let U = (T, tagB) in
+  let sid = mac(k, (L_SESS, U)) in
+  event AcceptI(me, peer, T, sid);
+  event BeginI(me, peer, T, sid);
+  out(c, (nB, mac(k, (L_VER, U)))).
+
+let Responder(me: id) =
+  in(c, (idA: id, slotA: bitstring, nA: nonce, tA: nonce));
+  if idA <> me then
+  if slotA = slot(idA) then
+  get keys(=me, =idA, k) in
+  new nB: nonce;
+  let T = (f0, base, idA, slotA, nA, tA, me, slot(me), nB) in
+  let tagB = mac(k, (L_RESP, T)) in
+  let U = (T, tagB) in
+  let sid = mac(k, (L_SESS, U)) in
+  event BeginR(me, idA, T, sid);
+  out(c, (me, slot(me), nA, nB, tagB));
+  in(c, (=nB, tagA: bitstring));
+  if tagA = mac(k, (L_VER, U)) then
+  event AcceptR(me, idA, T, sid).
+
+process
+  insert keys(A, B, kab); insert keys(B, A, kab);
+  insert keys(A, C, kac); insert keys(C, A, kac);
+  insert keys(B, C, kbc); insert keys(C, B, kbc);
+  ( (!Initiator(A)) | (!Responder(A)) | (!Initiator(B)) | (!Responder(B)) )

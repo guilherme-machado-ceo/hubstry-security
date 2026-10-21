@@ -1,0 +1,73 @@
+name: formal
+
+# Symbolic verification of HSL Auth v1 with ProVerif.
+# Separate from ci.yml and not a required check: it records evidence for the
+# specification in docs/specs/hsl-auth-v1-spec.md.
+
+on:
+  push:
+    branches: [spec/hsl-auth-v1-formal]
+    paths: ["formal/**", ".github/workflows/formal.yml"]
+  pull_request:
+    paths: ["formal/**", ".github/workflows/formal.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: formal-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROVERIF_VERSION: "2.05"
+
+jobs:
+  proverif:
+    name: proverif (HSL Auth v1)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ProVerif from the official source tarball
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ocaml-nox
+          curl -fsSL -o proverif.tar.gz "https://bblanche.gitlabpages.inria.fr/proverif/proverif${PROVERIF_VERSION}.tar.gz"
+          sha256sum proverif.tar.gz | tee proverif.sha256
+          mkdir -p "$RUNNER_TEMP/pv" && tar -xzf proverif.tar.gz -C "$RUNNER_TEMP/pv"
+          cd "$RUNNER_TEMP/pv/proverif${PROVERIF_VERSION}"
+          ./build -nointeract
+          echo "$PWD" >> "$GITHUB_PATH"
+
+      - name: "Main model: P1-P4 all proved (5/5 queries true)"
+        run: |
+          mkdir -p out
+          proverif formal/proverif/hsl_auth_v1.pv | tee out/main.txt
+          grep '^RESULT' out/main.txt
+          test "$(grep -c '^RESULT .* is true\.$' out/main.txt)" -eq 5
+          ! grep -E '^RESULT .* (is false|cannot be proved)' out/main.txt
+
+      - name: "Control (i) PSK shared with attacker node: attack found"
+        run: |
+          proverif formal/proverif/control_shared_psk.pv | tee out/control_shared_psk.txt
+          grep '^RESULT' out/control_shared_psk.txt
+          grep -q '^RESULT .* is false\.$' out/control_shared_psk.txt
+
+      - name: "Control (ii) step 3 not verified: attack on P2 found"
+        run: |
+          proverif formal/proverif/control_no_verify.pv | tee out/control_no_verify.txt
+          grep '^RESULT' out/control_no_verify.txt
+          grep -q '^RESULT inj-event(AcceptR.* is false\.$' out/control_no_verify.txt
+
+      - name: Record environment
+        if: always()
+        run: |
+          { proverif -help 2>&1 | head -1 || true; cat proverif.sha256 2>/dev/null || true; } | tee out/environment.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: proverif-results
+          path: out/
