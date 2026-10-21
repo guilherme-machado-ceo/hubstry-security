@@ -59,6 +59,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import math
+import numbers
 import secrets
 import struct
 import threading
@@ -292,13 +293,13 @@ class Session:
 # ---------------------------------------------------------------------------
 
 
-@dataclass
+@dataclass(frozen=True)
 class HSLAuthConfig:
     """Protocol context. f0 and base are public parameters, not secrets.
 
-    Validated on creation: f0 must be finite and positive, base an integer in
-    1..65535 (phase slots are encoded as u16) and timestamp_window a positive
-    integer.
+    Immutable and validated on creation: f0 must be a finite, positive real
+    number; base an integer in 1..65535 (phase slots are encoded as u16);
+    timestamp_window a finite, positive real number of seconds.
     """
 
     f0: float = 440.0
@@ -306,18 +307,25 @@ class HSLAuthConfig:
     timestamp_window: int = 60
 
     def __post_init__(self) -> None:
-        if isinstance(self.f0, bool) or not isinstance(self.f0, (int, float)):
-            raise HSLAuthError("f0 must be a number")
-        if not math.isfinite(self.f0) or self.f0 <= 0:
-            raise HSLAuthError("f0 must be finite and positive")
-        if isinstance(self.base, bool) or not isinstance(self.base, int) or not 1 <= self.base <= 0xFFFF:
-            raise HSLAuthError("base must be an integer in 1..65535")
+        _check_positive_real("f0", self.f0)
         if (
-            isinstance(self.timestamp_window, bool)
-            or not isinstance(self.timestamp_window, int)
-            or self.timestamp_window <= 0
+            isinstance(self.base, bool)
+            or not isinstance(self.base, numbers.Integral)
+            or not 1 <= self.base <= 0xFFFF
         ):
-            raise HSLAuthError("timestamp_window must be a positive integer")
+            raise HSLAuthError("base must be an integer in 1..65535")
+        _check_positive_real("timestamp_window", self.timestamp_window)
+
+
+def _check_positive_real(name: str, value: object) -> None:
+    if isinstance(value, bool) or not isinstance(value, numbers.Real):
+        raise HSLAuthError(f"{name} must be a real number")
+    try:
+        as_float = float(value)
+    except (OverflowError, ValueError) as exc:
+        raise HSLAuthError(f"{name} must be finite") from exc
+    if not math.isfinite(as_float) or as_float <= 0:
+        raise HSLAuthError(f"{name} must be finite and positive")
 
 
 class HSLAuthEngine:
@@ -348,11 +356,13 @@ class HSLAuthEngine:
         self.node_id = node_id
         self._psk = bytes(psk)
         self.config = config or HSLAuthConfig()
-        self.peers = set(peers) if peers is not None else None
+        self.peers = frozenset(peers) if peers is not None else None
         self._clock = clock
         self._pending_initiator: dict[bytes, tuple[Challenge, str, float]] = {}
         self._pending_responder: dict[bytes, tuple[bytes, float, str]] = {}
         self._seen: dict[tuple[str, bytes], float] = {}
+        # Reentrant lock: safe even if an injected clock or a future helper
+        # calls back into the engine; the cost over a plain Lock is negligible.
         self._lock = threading.RLock()
 
     def __repr__(self) -> str:

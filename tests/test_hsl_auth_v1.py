@@ -342,6 +342,7 @@ def test_measured_sizes_are_recorded(capsys):
         ("tag_b", b"\x00" * 32),
         ("responder_id", "mallory-node-99"),
         ("phase_slot", (harmonic_phase_slot(B, 12) + 1) % 12),
+        ("nonce_b", b"\x01" * 31),
     ],
 )
 def test_h1_invalid_response_does_not_cancel_handshake(field_name, value):
@@ -350,7 +351,7 @@ def test_h1_invalid_response_does_not_cancel_handshake(field_name, value):
     response = bob.respond(wire(challenge))
     forged = dataclasses.replace(response, **{field_name: value})
     with pytest.raises(HSLAuthError):
-        alice.finish(wire(forged))
+        alice.finish(forged)  # not serialized: also covers fields the wire format would reject
     verify, s_alice = alice.finish(wire(response))
     s_bob = bob.complete(wire(verify))
     assert s_alice.session_id == s_bob.session_id
@@ -414,8 +415,14 @@ def test_h5_challenge_rejected_after_window_even_without_registry():
         {"f0": 0.0},
         {"f0": -0.0},
         {"f0": -440.0},
+        {"f0": 10**400},
+        {"f0": "440"},
+        {"f0": True},
+        {"base": True},
         {"timestamp_window": 0},
-        {"timestamp_window": 1.5},
+        {"timestamp_window": -1},
+        {"timestamp_window": float("nan")},
+        {"timestamp_window": "60"},
     ],
 )
 def test_h6_invalid_configuration_is_rejected(kwargs):
@@ -426,3 +433,50 @@ def test_h6_invalid_configuration_is_rejected(kwargs):
 def test_h6_valid_boundary_configuration_is_accepted():
     alice, bob = pair(config=HSLAuthConfig(f0=1e-9, base=65535, timestamp_window=1))
     full_handshake(alice, bob)
+
+
+def test_h6_configuration_is_immutable():
+    config = HSLAuthConfig()
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        config.base = 0  # type: ignore[misc]
+
+
+def test_h6_float_window_and_numeric_f0_types_are_accepted():
+    alice, bob = pair(config=HSLAuthConfig(f0=440, timestamp_window=60.0))
+    full_handshake(alice, bob)
+
+
+def test_peer_registry_is_immutable():
+    psk = generate_psk()
+    bob = HSLAuthEngine(B, psk, peers={A})
+    with pytest.raises(AttributeError):
+        bob.peers.add("mallory")  # type: ignore[union-attr]
+
+
+# --- concurrency: the internal lock serializes state transitions ---------------
+
+
+def test_concurrent_finish_completes_exactly_once():
+    import threading
+
+    for _ in range(50):
+        alice, bob = pair()
+        response = wire(bob.respond(wire(alice.initiate(B))))
+        barrier = threading.Barrier(8)
+        outcomes: list = []
+
+        def worker():
+            barrier.wait()
+            try:
+                alice.finish(response)
+                outcomes.append("ok")
+            except HSLAuthError:
+                outcomes.append("rejected")
+
+        threads = [threading.Thread(target=worker) for _ in range(8)]
+        for th in threads:
+            th.start()
+        for th in threads:
+            th.join()
+        assert outcomes.count("ok") == 1
+        assert outcomes.count("rejected") == 7
