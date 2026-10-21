@@ -7,9 +7,9 @@ name: formal
 on:
   push:
     branches: [spec/hsl-auth-v1-formal]
-    paths: ["formal/**", ".github/workflows/formal.yml"]
+    paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", ".github/workflows/formal.yml"]
   pull_request:
-    paths: ["formal/**", ".github/workflows/formal.yml"]
+    paths: ["formal/**", "docs/specs/hsl-auth-v1-spec.md", ".github/workflows/formal.yml"]
   workflow_dispatch:
 
 permissions:

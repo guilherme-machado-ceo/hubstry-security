@@ -275,7 +275,7 @@ Aqui `X = (f0, base, idA, slotA, nA, tA, idB, slotB, nB)` é o conteúdo do tran
 |---|---|---|
 | **P1** | Autenticação do respondente (acordo injetivo) | Se A executa `AcceptI(A, B, X)` e `K` não foi comprometida, então B executou `BeginR(B, A, X)` antes, e a cada `AcceptI` corresponde um `BeginR` distinto. |
 | **P2** | Autenticação do iniciador (acordo injetivo) | Se B executa `AcceptR(B, A, X)` e `K` não foi comprometida, então A executou `BeginI(A, B, X)` antes, e a cada `AcceptR` corresponde um `BeginI` distinto. |
-| **P3** | Vinculação da sessão | Quando A e B aceitam a mesma execução, concordam sobre os identificadores, as fases, os dois nonces, o carimbo de tempo, o contexto (`f0`, `base`) e o `sid`. |
+| **P3** | Vinculação da sessão | Quando A e B aceitam a mesma execução, concordam sobre os identificadores, as fases, os dois nonces, o carimbo de tempo, o contexto (`f0`, `base`) e o `sid`. Na verificação simbólica, o contexto é global (ver 12.4); a rejeição entre nós com contextos divergentes é sustentada por teste, não pelo modelo. |
 | **P4** | Sigilo da PSK | O atacante não obtém `K` a partir das execuções do protocolo. |
 
 O caráter injetivo de P1 e P2 é o que formaliza a resistência a repetição *dentro* do modelo: uma mensagem antiga reenviada não produz uma segunda aceitação.
@@ -375,6 +375,7 @@ O ProVerif analisa o modelo, não o código Python. A validade das conclusões p
 |---|---|---|
 | Conteúdo do transcript `T` (campos e ordem) | Representado diretamente, como tupla simbólica | Modelo; seção 6.3 |
 | Serialização em bytes, prefixos de comprimento, decodificação | Abstraído. A tupla simbólica pressupõe codificação injetiva, garantida pelos prefixos de comprimento (seção 6.3) | Testes de implementação `test_f06_*` (ida e volta, bytes truncados e excedentes, tipo errado) |
+| Contexto `f0` e `base` | Representado como constantes **globais**: o modelo não contempla nós com configurações diferentes, e a concordância sobre o contexto vale apenas nesse cenário | Teste `test_wrong_context_f0_is_rejected` cobre a divergência de `f0` na implementação; modelar contexto por participante fica para evolução do modelo |
 | Separação de domínio pelos rótulos | Representado (constantes distintas) | Modelo; seção 2 (rótulos prefix-distintos) |
 | HMAC-SHA-256 | Abstraído pela premissa C1 (função ideal sem inversa) | Premissa; `test_f02_*` confirma o uso de HMAC com chave |
 | Truncamento do `sid` a 16 bytes | Representado como função opaca `trunc16` | Modelo; colisões de 128 bits desconsideradas por premissa |
@@ -395,4 +396,5 @@ O ProVerif analisa o modelo, não o código Python. A validade das conclusões p
 **Não sustenta:**
 - que o código Python inteiro esteja formalmente verificado. A correspondência é estabelecida por revisão (seções 11 e 12.4) e por testes, não por extração automática;
 - uma prova computacional por redução, com limites explícitos de vantagem do atacante. Esse é um trabalho distinto, cuja extensão ainda não foi avaliada;
-- propriedades de disponibilidade, o mecanismo operacional de prevenção de repetição, nem o comportamento após reinício.
+- propriedades de disponibilidade, o mecanismo operacional de prevenção de repetição, nem o comportamento após reinício;
+- a rejeição de execuções entre nós com contextos (`f0`, `base`) divergentes, que o modelo não representa.
