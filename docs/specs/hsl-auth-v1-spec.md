@@ -352,7 +352,7 @@ P3 não tem consulta própria: está incorporada às quatro consultas de corresp
 
 ### 12.2 Resultados
 
-Execução de referência: workflow `formal`, run `39583262359`, commit `3a9cfc6435878ba0ef49e04bb69451306e49254f`, com o hash do ProVerif conferido contra o valor fixado. Os resultados abaixo foram transcritos das anotações dessa execução. O commit que registra esta referência altera apenas este parágrafo; os modelos e o workflow são idênticos aos do commit de referência, e o workflow reexecuta a verificação a cada alteração da especificação.
+Execução de referência: workflow `formal`, run `39589114061`, commit `994661d0657e69699d9ffcf193024f0b99511153`, com o hash do ProVerif conferido contra o valor fixado. Os resultados abaixo foram transcritos das anotações dessa execução. O commit que registra esta referência altera apenas este parágrafo; os modelos e o workflow são idênticos aos do commit de referência, e o workflow reexecuta a verificação a cada alteração da especificação.
 
 | Modelo | Consulta | Resultado | Esperado |
 |---|---|---|---|
