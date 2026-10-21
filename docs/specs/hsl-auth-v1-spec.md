@@ -88,9 +88,9 @@ sequenceDiagram
     A->>B: 1. Challenge(idA, slotA, nA, tA)
     Note over B: verifica par, slotA, |agora − tA| ≤ W,<br/>(idA, nA) não visto<br/>nB ← Rand(32)<br/>T ← transcript(...)<br/>tagB ← MAC(K, L_RESP ‖ T)
     B->>A: 2. Response(idB, slotB, nA, nB, tagB)
-    Note over A: localiza pendente[nA], confere idB esperado e slotB<br/>verifica tagB<br/>tagA ← MAC(K, L_VER ‖ T ‖ lp(tagB))<br/>A aceita; sid ← MAC(K, L_SESS ‖ T ‖ lp(tagB))[0..16]
+    Note over A: localiza pendente[nA], confere idB esperado e slotB<br/>verifica tagB<br/>tagA ← MAC(K, L_VER ‖ T ‖ lp(tagB))<br/>A aceita, sid ← MAC(K, L_SESS ‖ T ‖ lp(tagB))[0..16]
     A->>B: 3. Verify(nB, tagA)
-    Note over B: localiza pendente[nB]<br/>verifica tagA<br/>B aceita; sid ← mesmo cálculo
+    Note over B: localiza pendente[nB]<br/>verifica tagA<br/>B aceita, sid ← mesmo cálculo
 ```
 
 ---
