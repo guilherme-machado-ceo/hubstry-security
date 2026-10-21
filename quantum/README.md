@@ -117,3 +117,16 @@ n = 4, 8, 12, 16, 32, 64, 128, 256.
   formalization pending; audit reports retained outside the repo).
 
 Full experimental record: `docs/research/pr1-quantum-encoding.md`.
+
+## Addressing capacity (2026-10-21)
+
+`quantum/capacity.py` measures how many harmonic addresses can be recovered
+from each encoding: optimal success probability (square-root measurement,
+optimal for the symmetric encodings) and Holevo quantity.
+
+- Equatorial qubit: success 2/n and at most 1 bit per measurement, for any n.
+- Reference encoding: 2 - (3/4) log2(3) ~ 0.8113 bits for every n >= 3.
+- Qudit (n levels, Fourier states): all n addresses perfectly distinguishable,
+  log2(n) bits.
+
+Research record: [`docs/research/hale-q-capacity-2026-10.md`](../docs/research/hale-q-capacity-2026-10.md).
