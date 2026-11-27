@@ -1,6 +1,6 @@
 {
   "missao": "lean-mission-01",
-  "sprint": 1,
+  "sprint": 0,
   "max_sprints": 15,
   "status": "ativa",
   "itens": [
@@ -12,8 +12,8 @@
       "requer_main": [],
       "titulo": "Projeto Lake em formal/lean",
       "descricao": "Criar o projeto Lake em formal/lean: lean-toolchain e lakefile.toml com a Mathlib fixada numa tag de release (rev = tag exata), biblioteca HubstryLean com HubstryLean.lean e HubstryLean/Basic.lean compilando, e formal/lean/.gitignore com .lake/. Nenhum teorema matemático ainda.",
-      "status": "bloqueado",
-      "tentativas": 1
+      "status": "pendente",
+      "tentativas": 0
     },
     {
       "id": "1.F",
