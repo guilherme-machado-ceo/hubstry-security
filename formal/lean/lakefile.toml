@@ -1,0 +1,11 @@
+name = "HubstryLean"
+version = "0.1.0"
+defaultTargets = ["HubstryLean"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.16.0"
+
+[[lean_lib]]
+name = "HubstryLean"
