@@ -1,0 +1,194 @@
+{
+  "missao": "lean-mission-01",
+  "sprint": 1,
+  "max_sprints": 15,
+  "status": "ativa",
+  "itens": [
+    {
+      "id": "0.1",
+      "marco": 0,
+      "tipo": "infra",
+      "max_tentativas": 1,
+      "requer_main": [],
+      "titulo": "Projeto Lake em formal/lean",
+      "descricao": "Criar o projeto Lake em formal/lean: lean-toolchain e lakefile.toml com a Mathlib fixada numa tag de release (rev = tag exata), biblioteca HubstryLean com HubstryLean.lean e HubstryLean/Basic.lean compilando, e formal/lean/.gitignore com .lake/. Nenhum teorema matemático ainda.",
+      "status": "infra",
+      "tentativas": 1
+    },
+    {
+      "id": "1.F",
+      "marco": 1,
+      "tipo": "ficha",
+      "max_tentativas": 1,
+      "requer_main": [
+        "0.1"
+      ],
+      "titulo": "Ficha consolidada do Marco 1 (HALE-Q clássico)",
+      "descricao": "Em HubstryLean/Fichas/Marco1.lean, definir Q_n (piso, Q_n(x) = floor(n*x)/n) e R_n (arredondamento meio para cima, R_n(x) = floor(n*x + 1/2)/n, limitado a (n-1)/n no intervalo [0,1) e tomado módulo 1 no círculo AddCircle 1) e enunciar, com prova sorry, as afirmações 1.1 a 1.4. Cada enunciado com docstring de subficha: domínio, contradomínio e convenção, hipóteses, tipo de igualdade (em todo ponto ou q.t.p.), trecho do repo (quantum/quantizer_composition.py e docs/research/quantizer-composition-2026-10.md, seção 3).",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "1.1",
+      "marco": 1,
+      "tipo": "prova",
+      "max_tentativas": 1,
+      "requer_main": [
+        "1.F"
+      ],
+      "titulo": "Teorema 1: Q_m ∘ Q_n = Q_m ⇔ m ∣ n",
+      "descricao": "Provar o enunciado aprovado na ficha 1.F (igualdade em todo ponto de [0,1), m, n ≥ 1).",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "1.2",
+      "marco": 1,
+      "tipo": "prova",
+      "max_tentativas": 1,
+      "requer_main": [
+        "1.F"
+      ],
+      "titulo": "Caso m = 1: R_1 ∘ R_n = R_1 para todo n",
+      "descricao": "Provar o enunciado aprovado na ficha 1.F.",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "1.3",
+      "marco": 1,
+      "tipo": "prova",
+      "max_tentativas": 1,
+      "requer_main": [
+        "1.F"
+      ],
+      "titulo": "Teorema 2 q.t.p.: R_m ∘ R_n = R_m q.t.p. ⇔ n/m inteiro ímpar (m ≥ 2)",
+      "descricao": "Provar o enunciado aprovado na ficha 1.F, nos domínios fixados por ela.",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "1.4",
+      "marco": 1,
+      "tipo": "prova",
+      "max_tentativas": 1,
+      "requer_main": [
+        "1.F"
+      ],
+      "titulo": "Teorema 2 pontual: com n/m ímpar, a igualdade vale em todo ponto",
+      "descricao": "Provar o enunciado aprovado na ficha 1.F.",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "2.F",
+      "marco": 2,
+      "tipo": "ficha",
+      "max_tentativas": 1,
+      "requer_main": [
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4"
+      ],
+      "titulo": "Ficha consolidada do Marco 2 (codificações quânticas)",
+      "descricao": "Em HubstryLean/Fichas/Marco2.lean, definir os estados das codificações equatorial e de referência (conforme quantum/encoding_compare.py, quantum/capacity.py e quantum/harmonic_state.py), a fidelidade |<a|b>|^2, o projetor P_C da rede de 64 perfis (quantum/lattice64.py) e enunciar, com prova sorry, as afirmações 2.1 a 2.4, com docstring de subficha (cinco pontos).",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "2.1",
+      "marco": 2,
+      "tipo": "prova",
+      "max_tentativas": 1,
+      "requer_main": [
+        "2.F"
+      ],
+      "titulo": "Equatorial: F = cos²(Δθ/2); vizinhos F_n = cos²(π/n)",
+      "descricao": "Provar o enunciado aprovado na ficha 2.F.",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "2.2",
+      "marco": 2,
+      "tipo": "prova",
+      "max_tentativas": 1,
+      "requer_main": [
+        "2.F"
+      ],
+      "titulo": "Referência: fidelidade vizinha = cos⁴(π/n) + sen²(π/n)·cos²((2k+1)π/n)",
+      "descricao": "Provar o enunciado aprovado na ficha 2.F.",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "2.3",
+      "marco": 2,
+      "tipo": "prova",
+      "max_tentativas": 1,
+      "requer_main": [
+        "2.F"
+      ],
+      "titulo": "Constantes em n = 8: F_min = 3/4 e F_max = (2+√2)/4",
+      "descricao": "Provar o enunciado aprovado na ficha 2.F.",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "2.4",
+      "marco": 2,
+      "tipo": "prova",
+      "max_tentativas": 1,
+      "requer_main": [
+        "2.F"
+      ],
+      "titulo": "Rede de 64 perfis: P_C projetor ortogonal de posto 7; consistente ⇔ no máximo um bit ligado",
+      "descricao": "Provar o enunciado aprovado na ficha 2.F.",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "3.F",
+      "marco": 3,
+      "tipo": "ficha",
+      "max_tentativas": 1,
+      "requer_main": [
+        "2.1",
+        "2.2",
+        "2.3",
+        "2.4"
+      ],
+      "titulo": "Ficha consolidada do Marco 3 (expansão: medida μ)",
+      "descricao": "Em HubstryLean/Fichas/Marco3.lean, definir μ(m,n) como medida de Lebesgue de {x : A_m(A_n(x)) ≠ A_m(x)} nos dois domínios e enunciar, com prova sorry, 3.1 (razão par: m/(2n) no círculo e (m-1)/(2n) no intervalo) e 3.2 (fórmula por células para n < m sem divisibilidade, conforme seção 3.2 do registro de 21/10/2026), com docstring de subficha (cinco pontos).",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "3.1",
+      "marco": 3,
+      "tipo": "prova",
+      "max_tentativas": 1,
+      "requer_main": [
+        "3.F"
+      ],
+      "titulo": "μ com razão par, nos dois domínios",
+      "descricao": "Provar o enunciado aprovado na ficha 3.F.",
+      "status": "pendente",
+      "tentativas": 0
+    },
+    {
+      "id": "3.2",
+      "marco": 3,
+      "tipo": "prova",
+      "max_tentativas": 2,
+      "requer_main": [
+        "3.F"
+      ],
+      "titulo": "Fórmula por células de μ: provar ou refutar",
+      "descricao": "Provar o enunciado aprovado na ficha 3.F ou provar sua negação com um contraexemplo explícito (resultado refutado).",
+      "status": "pendente",
+      "tentativas": 0
+    }
+  ]
+}
