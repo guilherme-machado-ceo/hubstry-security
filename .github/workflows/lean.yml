@@ -1,0 +1,66 @@
+name: lean
+
+# Verificação independente da formalização em Lean 4 (formal/lean).
+# Roda em todo PR e push que toque a pasta. Não depende do runner do agente.
+
+on:
+  pull_request:
+    paths: ["formal/lean/**", ".github/workflows/lean.yml"]
+  push:
+    branches: [main]
+    paths: ["formal/lean/**", ".github/workflows/lean.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lean:
+    name: lean (build, proibidos, lean4checker)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Cerca de pastas e autoria (somente PRs da branch agente/lean)"
+        if: github.event_name == 'pull_request' && github.head_ref == 'agente/lean'
+        run: |
+          base="origin/${{ github.base_ref }}"
+          fora=$(git diff --name-only "$base...HEAD" | grep -Ev '^(formal/lean/|docs/research/lean-)' || true)
+          if [ -n "$fora" ]; then echo "::error::arquivos fora da cerca: $fora"; exit 1; fi
+          autores=$(git log --no-merges --format='%ae' "$base..HEAD" | sort -u | grep -v 'hubstry-lean-agent\[bot\]@users.noreply.github.com' || true)
+          if [ -n "$autores" ]; then echo "::error::commits de autores inesperados: $autores"; exit 1; fi
+
+      - name: Instalar elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Mathlib (cache) e lake build
+        working-directory: formal/lean
+        run: |
+          lake exe cache get
+          lake build
+
+      - name: Construções proibidas fora de Fichas
+        working-directory: formal/lean
+        run: |
+          if grep -rnE '(\bsorry\b|\badmit\b|native_decide|^[[:space:]]*axiom[[:space:]]|\bunsafe\b|implemented_by|@\[extern)' --include='*.lean' . \
+               | grep -v '^\./HubstryLean/Fichas/' | grep -v '/\.lake/'; then
+            echo "::error::construção proibida fora de HubstryLean/Fichas"; exit 1
+          fi
+
+      - name: lean4checker (informativo até confirmar a tag compatível)
+        continue-on-error: true
+        working-directory: formal/lean
+        run: |
+          v=$(sed 's/.*://' lean-toolchain)
+          git clone --depth 1 --branch "$v" https://github.com/leanprover/lean4checker /tmp/lean4checker
+          (cd /tmp/lean4checker && lake build)
+          lake env /tmp/lean4checker/.lake/build/bin/lean4checker HubstryLean
