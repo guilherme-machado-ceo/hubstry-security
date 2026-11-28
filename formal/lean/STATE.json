@@ -1,6 +1,6 @@
 {
   "missao": "lean-mission-01",
-  "sprint": 1,
+  "sprint": 2,
   "max_sprints": 15,
   "status": "ativa",
   "itens": [
@@ -25,8 +25,8 @@
       ],
       "titulo": "Ficha consolidada do Marco 1 (HALE-Q clássico)",
       "descricao": "Em HubstryLean/Fichas/Marco1.lean, definir Q_n (piso, Q_n(x) = floor(n*x)/n) e R_n (arredondamento meio para cima, R_n(x) = floor(n*x + 1/2)/n, limitado a (n-1)/n no intervalo [0,1) e tomado módulo 1 no círculo AddCircle 1) e enunciar, com prova sorry, as afirmações 1.1 a 1.4. Cada enunciado com docstring de subficha: domínio, contradomínio e convenção, hipóteses, tipo de igualdade (em todo ponto ou q.t.p.), trecho do repo (quantum/quantizer_composition.py e docs/research/quantizer-composition-2026-10.md, seção 3).",
-      "status": "pendente",
-      "tentativas": 0
+      "status": "ficha",
+      "tentativas": 1
     },
     {
       "id": "1.1",
@@ -190,5 +190,6 @@
       "status": "pendente",
       "tentativas": 0
     }
-  ]
+  ],
+  "custo_usd_acumulado": 0
 }
